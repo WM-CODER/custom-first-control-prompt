@@ -1,0 +1,284 @@
+/* Composer dock strip + settings panel surface. */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--ds-color-border, #e2e2e2);
+  padding-bottom: 4px;
+}
+
+.tab,
+.tabActive {
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--ds-color-text, #222);
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.tabActive {
+  background: var(--ds-color-fill, #ececec);
+  font-weight: 600;
+}
+
+.hint {
+  color: var(--ds-color-text-secondary, #777);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 12px;
+}
+
+.success {
+  color: #1e8449;
+  font-size: 12px;
+}
+
+.count {
+  color: var(--ds-color-text-secondary, #777);
+  font-size: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.buttonsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.blockLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-color-text-secondary, #666);
+  margin: 10px 0 4px;
+}
+
+.editorRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--ds-color-border, #e2e2e2);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.fieldWide {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.field input,
+.fieldWide textarea,
+.fieldWide input,
+.rawArea {
+  font-size: 13px;
+  padding: 4px 6px;
+  border: 1px solid var(--ds-color-border, #d5d5d5);
+  border-radius: 4px;
+  background: var(--ds-color-bg, #fff);
+  color: var(--ds-color-text, #222);
+  box-sizing: border-box;
+}
+
+.fieldWide textarea {
+  min-height: 64px;
+  resize: vertical;
+}
+
+.rawArea {
+  width: 100%;
+  min-height: 240px;
+  font-family: var(--ds-font-mono, monospace);
+  font-size: 12px;
+  white-space: pre;
+}
+
+.mono {
+  font-family: var(--ds-font-mono, ui-monospace, Consolas, monospace);
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--ds-color-fill, #f6f6f6);
+  border-radius: 4px;
+  padding: 8px;
+  margin: 4px 0;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.role {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 10px;
+  color: var(--ds-color-text-secondary, #777);
+}
+
+.previewSection {
+  margin-top: 8px;
+}
+
+.requestList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.requestItem {
+  border: 1px solid var(--ds-color-border, #e2e2e2);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.requestItem summary {
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  align-items: center;
+}
+
+.requestMeta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ds-color-text-secondary, #777);
+  margin-top: 6px;
+}
+
+.requestBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.requestSummary {
+  font-size: 12px;
+  color: var(--ds-color-text-secondary, #777);
+}
+
+/* Plugin card */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.danger {
+  color: #c0392b;
+  border-color: #c0392b;
+}
+
+/* Composer dock strip */
+
+.dock {
+  border: 1px solid var(--ds-color-border, #e2e2e2);
+  border-radius: 6px;
+  background: var(--ds-color-bg, #fff);
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.dockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  flex-wrap: wrap;
+}
+
+.dockTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-color-text, #222);
+  padding: 2px 0;
+}
+
+.dockButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.badgeOn,
+.badgeOff {
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 11px;
+}
+
+.badgeOn {
+  background: #d5f5e3;
+  color: #1e8449;
+}
+
+.badgeOff {
+  background: var(--ds-color-fill, #ececec);
+  color: var(--ds-color-text-secondary, #777);
+}
+
+.dockBody {
+  border-top: 1px solid var(--ds-color-border, #e2e2e2);
+  padding: 8px;
+}
+
+button {
+  font-size: 12px;
+  padding: 4px 10px;
+  border: 1px solid var(--ds-color-border, #d5d5d5);
+  border-radius: 4px;
+  background: var(--ds-color-bg, #fff);
+  color: var(--ds-color-text, #222);
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input[type='checkbox'] {
+  accent-color: #2e86de;
+}

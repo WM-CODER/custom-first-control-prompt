@@ -1,0 +1,39 @@
+# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+#
+# 关键约束（照抄会踩的坑）：
+# 1. profile patch 默认写「核心插件行 + 面板行」两行——npm 0.1.x 发布物
+#    （含 rc.6）的 web bundle 实测**不带**面板行（ui-custom-first-control-prompt），
+#    面板行必须写在 profile。**仅当**部署 bundle 确认已自带面板行（如从含该行的
+#    主线构建的 web-app，见 profile-web.patch.yml 的形态）时，删掉下方的面板行，
+#    避免同 id 重复 insert -> web fail-loud 起不来。
+# 2. 核心插件行本身也只出现一次：若 bundle 已自带（少见），删掉这里对应的条目。
+# 3. historyMode 示例用 'session-start'（对话式种子：首条真实消息前即成对显示，
+#    无 <custom-history> 框架文本）；reapply/per-request 为压缩遮蔽回退用框架，
+#    语义差异见 README.zh.md「预置历史」。注意：对话式种子需要框架含
+#    agent-loop/session-seed 钩子（仅主线构建有；npm 0.1.x 发布物无钩子，需打
+#    patches/framework-planA-rc5.patch 或走基础档帧路径，见 INSTALL.md「两档功能」）。
+# 4. 示例文本用中性测试内容（用户测试提示词1/助手提示词1 这种），不要用
+#    「每条回复必须以句号结尾」之类的自指规则——规则性样例会让模型在验证时
+#    陷入规则复读甚至死循环。
+- insert:
+    - id: custom-first-control-prompt
+      name: '@deepseek-ai/dsh-custom-first-control-prompt'
+      config:
+        sections:
+          - name: "system"
+            order: -50
+            text: "这是测试提示词"
+        history:
+          - user: "用户测试提示词1"
+            assistant: "助手提示词1"
+          - user: "用户测试提示词2"
+            assistant: "助手提示词2"
+        includeSubagents: false
+        historyMode: "session-start"
+
+    # Panel surface (client-ui/). npm 0.1.x bundle 不带此行，必须写在 profile；
+    # 仅当 bundle 确认自带时才删除本行（同 id 重复会让 web 起不来）。
+    - id: ui-custom-first-control-prompt
+      name: '@deepseek-ai/dsh-client-ui-custom-first-control-prompt'

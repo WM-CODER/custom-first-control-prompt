@@ -1,0 +1,13 @@
+# 依赖链 junction（本机路径，安装时重建，见 INSTALL.md）
+node_modules/
+
+# 构建调试产物（lib 运行时文件保留，保证单文件夹可装载）
+lib/*.map
+lib/types/*.map
+lib/tsconfig.tsbuildinfo
+client-ui/lib/*.map
+client-ui/lib/types/**/*.map
+client-ui/lib/tsconfig.tsbuildinfo
+
+# 本机杂项
+*.log

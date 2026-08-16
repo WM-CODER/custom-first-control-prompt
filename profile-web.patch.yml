@@ -1,0 +1,18 @@
+# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+- insert:
+    - id: custom-first-control-prompt
+      name: '@deepseek-ai/dsh-custom-first-control-prompt'
+      config:
+        sections:
+          - name: "system"
+            order: -50
+            text: "这是测试提示词"
+        history:
+          - user: "用户测试提示词1"
+            assistant: "助手提示词1"
+          - user: "用户测试提示词2"
+            assistant: "助手提示词2"
+        includeSubagents: true
+        historyMode: "session-start"
