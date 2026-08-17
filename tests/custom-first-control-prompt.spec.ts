@@ -186,6 +186,7 @@ describe('configuration degradation', () => {
     const { ctx } = await mount({
       history: [{ user: '', assistant: 'a' }, { user: 'u', assistant: '' }, PAIR],
       reapplyAfterCompaction: false,
+      seedMode: 'hook',
     })
     const session = ctx.sessions.create(SessionId('seed-degraded-empty'))
     startSession(ctx, session)
@@ -200,6 +201,7 @@ describe('configuration degradation', () => {
     const { ctx } = await mount({
       history: [{ user: '', assistant: 'a' }, { user: 'u', assistant: '' }],
       reapplyAfterCompaction: false,
+      seedMode: 'hook',
     })
     const session = ctx.sessions.create(SessionId('seed-degraded-all'))
     startSession(ctx, session)
@@ -215,6 +217,7 @@ describe('configuration degradation', () => {
         PAIR,
       ],
       reapplyAfterCompaction: false,
+      seedMode: 'hook',
     })
     const session = ctx.sessions.create(SessionId('seed-degraded-tags'))
     startSession(ctx, session)
@@ -239,7 +242,7 @@ describe('configuration degradation', () => {
 
 describe('transcript seeding', () => {
   it('seeds one framed plugin-sourced user message at session start', async () => {
-    const { ctx } = await mount({ history: PAIRS, reapplyAfterCompaction: false })
+    const { ctx } = await mount({ history: PAIRS, reapplyAfterCompaction: false, seedMode: 'hook' })
     const session = ctx.sessions.create(SessionId('seed-transcript'))
     startSession(ctx, session)
     expect(session.events).toHaveLength(1)
@@ -252,7 +255,7 @@ describe('transcript seeding', () => {
   })
 
   it('skips re-seeding when session-start fires again on a seeded log', async () => {
-    const { ctx } = await mount({ history: PAIRS, reapplyAfterCompaction: false })
+    const { ctx } = await mount({ history: PAIRS, reapplyAfterCompaction: false, seedMode: 'hook' })
     const session = ctx.sessions.create(SessionId('seed-resume'))
     startSession(ctx, session)
     startSession(ctx, session, 'resume')
@@ -260,7 +263,7 @@ describe('transcript seeding', () => {
   })
 
   it('seeds a fresh session per session-start', async () => {
-    const { ctx } = await mount({ history: [PAIR], reapplyAfterCompaction: false })
+    const { ctx } = await mount({ history: [PAIR], reapplyAfterCompaction: false, seedMode: 'hook' })
     const first = ctx.sessions.create(SessionId('seed-first'))
     const second = ctx.sessions.create(SessionId('seed-second'))
     startSession(ctx, first)
@@ -270,14 +273,14 @@ describe('transcript seeding', () => {
   })
 
   it('skips subagent-originated sessions by default', async () => {
-    const { ctx } = await mount({ history: [PAIR], reapplyAfterCompaction: false })
+    const { ctx } = await mount({ history: [PAIR], reapplyAfterCompaction: false, seedMode: 'hook' })
     const session = ctx.sessions.create(SessionId('seed-subagent'), { meta: { origin: 'subagent' } })
     startSession(ctx, session)
     expect(session.events).toHaveLength(0)
   })
 
   it('seeds subagent-originated sessions when includeSubagents is set', async () => {
-    const { ctx } = await mount({ history: [PAIR], includeSubagents: true, reapplyAfterCompaction: false })
+    const { ctx } = await mount({ history: [PAIR], includeSubagents: true, reapplyAfterCompaction: false, seedMode: 'hook' })
     const session = ctx.sessions.create(SessionId('seed-subagent-included'), { meta: { origin: 'subagent' } })
     startSession(ctx, session)
     expect(session.events).toHaveLength(1)
@@ -296,7 +299,7 @@ describe('transcript seeding', () => {
 
   it('places the framed transcript ahead of the first real prompt in the model request', async () => {
     const adapter = new ScriptedAdapter([textResponse('done')])
-    const ctx = await loopHarness(adapter, { history: PAIRS })
+    const ctx = await loopHarness(adapter, { history: PAIRS, seedMode: 'hook' })
     const agent = ctx.agentLoop.create(SessionId('transcript-loop'), { provider: 'mock', model: 'mock' })
     agent.followup(createUserMessage({ content: [{ type: 'text', text: 'start' }], source: { kind: 'user' } }))
     await agent.whenIdle()
@@ -311,7 +314,7 @@ describe('transcript seeding', () => {
 describe('history modes', () => {
   it('reapply (default) injects once and keeps the frame present on later requests', async () => {
     const adapter = new ScriptedAdapter([textResponse('done'), textResponse('done again')])
-    const ctx = await loopHarness(adapter, { history: PAIRS })
+    const ctx = await loopHarness(adapter, { history: PAIRS, seedMode: 'hook' })
     const agent = ctx.agentLoop.create(SessionId('reapply-loop'), { provider: 'mock', model: 'mock' })
     agent.followup(createUserMessage({ content: [{ type: 'text', text: 'first' }], source: { kind: 'user' } }))
     await agent.whenIdle()
@@ -333,7 +336,7 @@ describe('history modes', () => {
 
   it('per-request injects a fresh frame on every request', async () => {
     const adapter = new ScriptedAdapter([textResponse('done'), textResponse('done again')])
-    const ctx = await loopHarness(adapter, { history: PAIRS, historyMode: 'per-request' })
+    const ctx = await loopHarness(adapter, { history: PAIRS, historyMode: 'per-request', seedMode: 'hook' })
     const agent = ctx.agentLoop.create(SessionId('per-request-loop'), { provider: 'mock', model: 'mock' })
     agent.followup(createUserMessage({ content: [{ type: 'text', text: 'first' }], source: { kind: 'user' } }))
     await agent.whenIdle()
@@ -352,7 +355,7 @@ describe('history modes', () => {
 
   it('session-start mode seeds once durably and never re-injects per request', async () => {
     const adapter = new ScriptedAdapter([textResponse('done')])
-    const ctx = await loopHarness(adapter, { history: PAIRS, historyMode: 'session-start' })
+    const ctx = await loopHarness(adapter, { history: PAIRS, historyMode: 'session-start', seedMode: 'hook' })
     const agent = ctx.agentLoop.create(SessionId('session-start-loop'), { provider: 'mock', model: 'mock' })
     agent.followup(createUserMessage({ content: [{ type: 'text', text: 'first' }], source: { kind: 'user' } }))
     await agent.whenIdle()
@@ -366,7 +369,7 @@ describe('history modes', () => {
 
   it('maps reapplyAfterCompaction: true onto reapply behavior (no per-request accumulation)', async () => {
     const adapter = new ScriptedAdapter([textResponse('done'), textResponse('done again')])
-    const ctx = await loopHarness(adapter, { history: PAIRS, reapplyAfterCompaction: true })
+    const ctx = await loopHarness(adapter, { history: PAIRS, reapplyAfterCompaction: true, seedMode: 'hook' })
     const agent = ctx.agentLoop.create(SessionId('legacy-reapply-loop'), { provider: 'mock', model: 'mock' })
     agent.followup(createUserMessage({ content: [{ type: 'text', text: 'first' }], source: { kind: 'user' } }))
     await agent.whenIdle()
@@ -379,7 +382,7 @@ describe('history modes', () => {
   })
 
   it('falls back to durable session-start seeding when reapplyAfterCompaction is false', async () => {
-    const { ctx } = await mount({ history: PAIRS, reapplyAfterCompaction: false })
+    const { ctx } = await mount({ history: PAIRS, reapplyAfterCompaction: false, seedMode: 'hook' })
     const session = ctx.sessions.create(SessionId('legacy-seed'))
     startSession(ctx, session)
     expect(session.events).toHaveLength(1)
@@ -431,6 +434,6 @@ describe('loader export path', () => {
     // No default export: Loader.unwrapExports collapses onto exports.default when
     // present, dropping the named Config schema — the plugin must keep the full
     // contract on named exports only (see the load-path guards across the repo).
-    expect(CustomFirstControlPrompt.default).toBeUndefined()
+    expect('default' in CustomFirstControlPrompt).toBe(false)
   })
 })

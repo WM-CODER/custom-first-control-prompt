@@ -8,6 +8,10 @@ Deployment-configured prompt prefix. Ordered system-prompt sections render ahead
 
 > **Note**: `panel/` is the legacy in-process dynamic-panel source from the cordis_define era and is **deprecated** — the shipped panel is the formal client bundle in `client-ui/`.
 
+## FAQ: why do I need a `ui-custom-first-control-prompt` row to see the UI?
+
+The settings panel (config editor / dock / plugin toggle) is a **separate client loader row** (`ui-custom-first-control-prompt`): the browser loads the panel bundle and shows the UI only if that row is present in the web composition. It comes from either (a) the `@deepseek-ai/dsh-web-app` bundle's own `cordis.patch.yml` (when the bundle carries it — e.g. local mainline web-app builds), or (b) a manual row in `<DSH_HOME>/profiles/web/cordis.patch.yml`. npm-published `dsh-web-app` (rc.6 etc.) does **not** carry the row (verified via `npm pack`), so npm deployments must add it to the profile patch to see the UI. The core row `custom-first-control-prompt` handles server logic (sections, seeded history); the panel row handles browser UI — installing the core alone keeps the features but hides the UI. Older panel saves overwrote the whole patch file (dropping the manual panel row); current versions preserve all other lines.
+
 ## Config
 
 ```yaml
@@ -35,7 +39,7 @@ Deployment-configured prompt prefix. Ordered system-prompt sections render ahead
 | `history` | — | Ordered `user`/`assistant` reference exchanges seeded before the first turn; both texts must be non-empty and must not embed a reserved frame tag case-insensitively (`<user>`, `<assistant>`, `<exchange>`, `<custom-history`, or any closing tag), since an embedded tag would break the exchange structure the frame promises the model. Absent or empty seeds nothing. |
 | `includeSubagents` | `false` | `false` skips sessions whose header meta marks subagent origin. |
 | `historyMode` | `reapply` | Reference-history application mode; see Seeded History below. |
-| `seedMode` | `hook` | Conversational-seed mechanism: `hook` (route A, framework `agent-loop/session-seed` seed boundary; requires a hook-capable mainline build) or `append` (route B, `agent/session-start` + `Session.append()`; **no framework hook/patch needed, works on npm 0.1.x**). See "Conversational seed mechanism (route B)". |
+| `seedMode` | `append` | Conversational-seed mechanism: `append` (default, route B — `agent/session-start` + `Session.append()`, **no framework hook/patch needed, works on npm 0.1.x**) or `hook` (route A, framework `agent-loop/session-seed` seed boundary; requires a hook-capable mainline build). See "Conversational seed mechanism (route B)". |
 | `reapplyAfterCompaction` | — | Legacy alias: `true` maps to `historyMode: 'reapply'`, `false` maps to `'session-start'`; an explicit `historyMode` wins. |
 
 Misconfiguration fails plugin load with the offending entry named: unpaired roles, empty text, duplicate section names, or a non-finite order.

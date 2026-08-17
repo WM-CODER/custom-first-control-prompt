@@ -37,20 +37,22 @@
 | `history` | — | 在首个 turn 之前注入的有序 `user`/`assistant` 参考对话；两者文本都必须非空，且不得包含框架保留标签（大小写不敏感：`<user>`、`<assistant>`、`<exchange>`、`<custom-history` 及所有闭合标签），因为内嵌标签会破坏框架向模型承诺的对话结构。缺省或为空时不注入。 |
 | `includeSubagents` | `false` | `false` 时跳过 header meta 标记为 subagent 来源的会话。 |
 | `historyMode` | `reapply` | 参考对话的应用模式，见下方「预置历史」。 |
-| `seedMode` | `hook` | 对话式种子的注入机制：`hook`（A 路线，框架 `agent-loop/session-seed` 种子边界，需含钩子的主线构建）或 `append`（B 路线，`agent/session-start` + `Session.append()`，**不依赖框架钩子/补丁，npm 0.1.x 部署可用**）。见「对话式种子机制（B 路线）」。 |
+| `seedMode` | `append` | 对话式种子的注入机制：`append`（B 路线，默认，`agent/session-start` + `Session.append()`，**不依赖框架钩子/补丁，npm 0.1.x 部署可用**）或 `hook`（A 路线，框架 `agent-loop/session-seed` 种子边界，需含钩子的主线构建）。见「对话式种子机制（B 路线）」。 |
 | `reapplyAfterCompaction` | — | 兼容别名：`true` 映射为 `historyMode: 'reapply'`，`false` 映射为 `'session-start'`；显式 `historyMode` 优先。 |
 
 配置错误会使插件加载失败并指明出错条目：角色不成对、文本为空、section 重名或 order 非有限数。
 
-## 对话式种子机制（B 路线）
+## 对话式种子机制（B 路线，默认）
 
-会话开始的参考历史默认走 **A 路线**（`agent-loop/session-seed` 钩子，在会话创建时经 `sessions.prepare` 种子边界进入日志）。npm 0.1.x 发布物（含 rc.6）**实测无此钩子**，此时默认落到**基础档（`<custom-history>` 帧）**。
+参考历史默认走 **B 路线（`seedMode: "append"`）**：插件在 `agent/session-start` 用 `Session.append()` 把每对参考历史写成**真实闭合的交替 user/assistant 消息**，**不依赖框架钩子/补丁**——npm 0.1.x 发布物（含 rc.6，实测无 `agent-loop/session-seed` 钩子）也能拿到对话式完全版；本模式只做会话开头这一次注入（不注册钩子监听、不做 pre-step 帧回退，`historyMode` 在 append 下被忽略）。
 
-**B 路线（`seedMode: "append"`）** 让 npm 部署**不修改框架**也能拿到对话式完全版：`seedMode` 取 `append` 时，插件在 `agent/session-start` 用 `Session.append()` 把每对参考历史写成**真实闭合的交替 user/assistant 消息**（与 A 路线同款气泡与模型体验），并**不再注册钩子监听、不做 pre-step 帧回退**（本模式只做会话开头的这一次注入；`historyMode` 在 `seedMode: "append"` 下被忽略）。
+需要走 **A 路线（`seedMode: "hook"`）**（框架 `agent-loop/session-seed` 种子边界，需含钩子的主线构建，fork 兼容）时显式设 `hook`。
 
-**面板启用**：设置 → 「自定义优先控制提示词」→ 配置 tab → 「对话式种子机制」下拉选 **Append (route B)** 并保存。首次打开若显示 A/hook，说明客户端缓存了旧资源——**硬刷新**（Ctrl+Shift+R）后即正确。
+**面板启用/选择**：设置 → 「自定义优先控制提示词」→ 配置 tab → 「对话式种子机制」下拉选 **Append (route B)** 或 **Hook (route A)** 并保存。首次打开若显示与配置不符，说明客户端缓存了旧资源——**硬刷新**（Ctrl+Shift+R）后即正确。
 
 **验证是否有 B 在生效**：新建会话，调 `session.history`——种子轮次应排在 `permission/preset` 等系统事件**之后**，且整个日志**没有 `session/end-seed`**（A 路线有该边界标记）。
+
+**面板保存不丢其它行**：面板「配置编辑」保存只更新本插件核心行（`custom-first-control-prompt`）的配置，**保留 `cordis.patch.yml` 里其它所有内容**——包括手动写入的面板客户端行（`- id: ui-custom-first-control-prompt`）、其它条目与注释。旧版本会整文件覆盖并抹掉手动面板行（UI 失联），已修复。
 
 **已知限制**：
 - **fork 含种子会话会失败**（无 seed 边界放宽的框架）：fork 会把父日志前缀作为子会话 seed 传入 `sessions.prepare`，被边界校验拒绝。需要 fork 请用 A 路线（打框架补丁或等含钩子/放宽的主线构建）。
@@ -139,3 +141,17 @@ The following exchanges are deployment-configured reference history; they did no
 - **`per-request` 会随请求轮次累积持久化框架** — 种子被遮蔽后，每轮请求都会在日志中追加一条框架 `user/message`；较早的框架随后会被 compaction 吸收，但压缩间隔内的请求会携带多份参考对话（Token 成本随轮次线性增长，直到压缩）。需要固定成本请用 `reapply`（默认）。
 - **种子轮次占用轮次编号** — 对话式种子占用第 1..N 轮，第一个真实轮次从 N+1 开始。展示轮次编号的界面会看到偏移。
 - **预置文本是模型可见的参考材料** — 框架已声明这些对话并未真实发生，但部署方应将其视为模型读取的提示词文本，而非可信通道。
+
+## FAQ：面板 UI 为什么需要配置 `ui-custom-first-control-prompt` 行？
+
+设置页的面板（配置编辑 / dock / 插件开关）是一个**独立的客户端 loader 行** `ui-custom-first-control-prompt`，浏览器只有在 web 组合里包含它时才会加载面板 bundle 并显示 UI。它有两个来源：
+
+1. **web bundle 自带**：`@deepseek-ai/dsh-web-app` 的 `cordis.patch.yml` 若已含 `- id: ui-custom-first-control-prompt` → 开箱即有 UI；
+2. **profile 手写**：bundle **不带**该行 → 必须在 `<DSH_HOME>/profiles/web/cordis.patch.yml` 补写，浏览器才会加载面板。
+
+- **本机开发部署**用本地构建的 web app（bundle patch 已恢复该行）→ 不用在 profile 写、UI 自动出现；
+- **npm 部署**（rc.6 等）：`npm pack` 实测 `dsh-web-app` 的 `cordis.patch.yml` **不含**该行 → **必须**在 profile 补写这行才能看到 UI。
+
+核心行 `custom-first-control-prompt` 管**服务端逻辑**（系统段、参考历史种子）；面板行管**浏览器 UI**。只装核心不补面板行 = **功能在、UI 不显示**（面板是可选外壳）。旧版本面板保存会**整文件覆盖** `cordis.patch.yml` 抹掉手写的面板行（UI 失联）；当前版本保存只更新核心行、**保留其它行**（含面板行）。
+
+> 注意重复 id：若 bundle 已自带该行，profile 再写一次 = **同 id 重复 insert → web 起不来**；判定方法见 [INSTALL.md](INSTALL.md) §0「bundle 是否自带面板行」。

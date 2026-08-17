@@ -85,6 +85,7 @@ describe('Plan A: conversational reference-history seeding', () => {
     await ctx.plugin(Companion)
     await ctx.plugin(CustomFirstControlPrompt, {
       history: PAIRS,
+      seedMode: 'hook',
       reapplyAfterCompaction: false,
     })
     const handle = await ctx.agentLoop.createAgent(ctx, {

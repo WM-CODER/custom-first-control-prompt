@@ -47,17 +47,18 @@ export interface SectionEntry {
 export type HistoryMode = 'session-start' | 'reapply' | 'per-request';
 /**
  * Which mechanism injects the conversational (Plan A) reference seed.
- * - `hook` (default): the `agent-loop/session-seed` waterfall at session
- *   creation — requires the framework hook (mainline builds only).
- * - `append`: route B — no hook, no pre-step frames; the reference exchanges
- *   are appended as balanced conversational turns at `agent/session-start`
- *   only. Works on any 0.1.x framework (npm 0.1.x included) without patching
- *   the framework. `historyMode` is ignored in this mode (session-start-only
+ * - `append` (default, route B): the reference exchanges are appended as
+ *   balanced conversational turns at `agent/session-start` via `Session.append()`
+ *   — no framework hook or patch needed, works on any 0.1.x framework (npm
+ *   0.1.x included). `historyMode` is ignored in this mode (session-start-only
  *   injection by design); `reapply`/`per-request` compaction fallbacks do not
  *   apply. Known limitation: forking a session that carries an append-seeded
  *   conversation fails on frameworks without the seed-boundary relaxation
  *   (the fork prefix re-enters the seed boundary, which rejects plugin-source
  *   assistant messages).
+ * - `hook` (route A): the `agent-loop/session-seed` waterfall at session
+ *   creation, seeded through the `sessions.prepare` boundary — requires the
+ *   framework hook (mainline builds only) and keeps seed-boundary forking.
  */
 export type SeedMode = 'hook' | 'append';
 /** Plugin configuration; see README for the full contract. */
@@ -74,8 +75,9 @@ export interface Config {
      */
     historyMode?: HistoryMode;
     /**
-     * Conversational-seed mechanism: `hook` (framework `agent-loop/session-seed`,
-     * default) or `append` (route B, session-start-only; see {@link SeedMode}).
+     * Conversational-seed mechanism: `append` (default, route B — no framework
+     * hook/patch) or `hook` (route A, framework `agent-loop/session-seed` seed
+     * boundary; see {@link SeedMode}).
      */
     seedMode?: SeedMode;
     /**

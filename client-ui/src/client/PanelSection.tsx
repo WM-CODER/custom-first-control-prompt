@@ -33,7 +33,7 @@ export interface PanelSectionProps extends PropsLocale<'cfcp.panel'> {
 
 /** Empty editable config view. */
 function emptyConfig(): PanelConfigView {
-  return { found: false, sections: [], history: [], includeSubagents: false, historyMode: 'reapply', seedMode: 'hook' }
+  return { found: false, sections: [], history: [], includeSubagents: false, historyMode: 'reapply', seedMode: 'append' }
 }
 
 /**
@@ -190,12 +190,12 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
                 <label className={css['field']}>
                   <span>{t('sectionName')}</span>
                   <input value={section.name}
-                    onChange={event => { setSection(at, { name: event.target.value }) }} />
+                    onChange={(event) => { setSection(at, { name: event.target.value }) }} />
                 </label>
                 <label className={css['field']}>
                   <span>{t('sectionOrder')}</span>
                   <input type="number" value={section.order}
-                    onChange={event => {
+                    onChange={(event) => {
                       const order = Number(event.target.value)
                       setSection(at, { order: Number.isFinite(order) ? order : 0 })
                     }} />
@@ -203,12 +203,12 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
                 <label className={css['field']}>
                   <span>{t('sectionEnabled')}</span>
                   <input type="checkbox" checked={section.enabled}
-                    onChange={event => { setSection(at, { enabled: event.target.checked }) }} />
+                    onChange={(event) => { setSection(at, { enabled: event.target.checked }) }} />
                 </label>
                 <label className={css['fieldWide']}>
                   <span>{t('sectionText')}</span>
                   <textarea value={section.text}
-                    onChange={event => { setSection(at, { text: event.target.value }) }} />
+                    onChange={(event) => { setSection(at, { text: event.target.value }) }} />
                 </label>
                 <button type="button" className={css['danger']}
                   onClick={() => {
@@ -235,12 +235,12 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
                 <label className={css['fieldWide']}>
                   <span>{t('historyUser')}</span>
                   <textarea value={pair.user}
-                    onChange={event => { setPair(at, { user: event.target.value }) }} />
+                    onChange={(event) => { setPair(at, { user: event.target.value }) }} />
                 </label>
                 <label className={css['fieldWide']}>
                   <span>{t('historyAssistant')}</span>
                   <textarea value={pair.assistant}
-                    onChange={event => { setPair(at, { assistant: event.target.value }) }} />
+                    onChange={(event) => { setPair(at, { assistant: event.target.value }) }} />
                 </label>
                 <button type="button" className={css['danger']}
                   onClick={() => {
@@ -263,13 +263,13 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
             </button>
             <label className={css['row']}>
               <input type="checkbox" checked={config.includeSubagents}
-                onChange={event => { setConfig(previous => ({ ...previous, includeSubagents: event.target.checked })) }} />
+                onChange={(event) => { setConfig(previous => ({ ...previous, includeSubagents: event.target.checked })) }} />
               <span>{t('includeSubagents')}</span>
             </label>
             <label className={css['row']}>
               <span>{t('historyMode')}</span>
               <select value={config.historyMode}
-                onChange={event => { setConfig(previous => ({ ...previous, historyMode: event.target.value })) }}>
+                onChange={(event) => { setConfig(previous => ({ ...previous, historyMode: event.target.value })) }}>
                 {modeOptions.map(option => (
                   <option value={option.value} key={option.value}>{t(option.label)}</option>
                 ))}
@@ -278,7 +278,7 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
             <label className={css['row']}>
               <span>{t('seedMode')}</span>
               <select value={config.seedMode}
-                onChange={event => { setConfig(previous => ({ ...previous, seedMode: event.target.value })) }}>
+                onChange={(event) => { setConfig(previous => ({ ...previous, seedMode: event.target.value })) }}>
                 {seedModeOptions.map(option => (
                   <option value={option.value} key={option.value}>{t(option.label)}</option>
                 ))}
@@ -302,7 +302,7 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
           <div>
             <div className={css['hint']}>{path.length > 0 ? path : t('configNotFound')}</div>
             <textarea className={css['rawArea']} value={raw}
-              onChange={event => { setRaw(event.target.value) }} spellCheck={false} />
+              onChange={(event) => { setRaw(event.target.value) }} spellCheck={false} />
             <div className={css['buttonsRow']}>
               <button type="button" disabled={busy} onClick={() => { void importRaw() }}>{t('importRaw')}</button>
             </div>

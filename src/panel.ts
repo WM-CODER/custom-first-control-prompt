@@ -79,7 +79,7 @@ export class PanelService extends TypertRemoteService {
         const m = typeof msg === 'object' && msg !== null ? msg as Record<string, unknown> : undefined
         if (typeof m?.['content'] === 'string') text = m['content']
         else if (Array.isArray(m?.['content'])) {
-          text = (m['content'] as unknown[]).map(block => {
+          text = (m['content'] as unknown[]).map((block) => {
             if (typeof block === 'string') return block
             const b = typeof block === 'object' && block !== null ? block as Record<string, unknown> : undefined
             return b?.['type'] === 'text' && typeof b['text'] === 'string' ? b['text'] : ''
@@ -134,7 +134,7 @@ export class PanelService extends TypertRemoteService {
   }
 
   private static parseBlock(raw: string): PanelConfigView {
-    const out: PanelConfigView = { found: false, sections: [], history: [], includeSubagents: false, historyMode: 'reapply', seedMode: 'hook' }
+    const out: PanelConfigView = { found: false, sections: [], history: [], includeSubagents: false, historyMode: 'reapply', seedMode: 'append' }
     if (raw.indexOf('custom-first-control-prompt') < 0) return out
     out.found = true
     let zone: '' | 'sections' | 'history' = ''
@@ -172,25 +172,23 @@ export class PanelService extends TypertRemoteService {
     return out
   }
 
-  private static buildPatch(config: PanelConfigView | undefined): string {
+  /** Render just the core `custom-first-control-prompt` loader row (4-space indent block). */
+  private static coreBlock(config: PanelConfigView | undefined): string {
     const sections = Array.isArray(config?.sections) ? config.sections : []
     const history = Array.isArray(config?.history) ? config.history : []
     const includeSubagents = config?.includeSubagents === true
     const mode = config?.historyMode === 'per-request' || config?.historyMode === 'session-start'
       ? config.historyMode
       : 'reapply'
-    const seedMode = config?.seedMode === 'append' ? 'append' : 'hook'
+    // Route B (append) is the default mechanism; only an explicit 'hook' opts back.
+    const seedMode = config?.seedMode === 'hook' ? 'hook' : 'append'
     const secBlock = sections.length > 0
       ? sections.map(s => `          - name: ${PanelService.yamlScalar(s.name)}\n            order: ${Number(s.order) || 0}\n            text: ${PanelService.yamlScalar(s.text)}`).join('\n')
       : ''
     const hisBlock = history.length > 0
       ? history.map(p => `          - user: ${PanelService.yamlScalar(p.user)}\n            assistant: ${PanelService.yamlScalar(p.assistant)}`).join('\n')
       : ''
-    return '# Your patch layer for this dsh profile, applied after every bundle layer:\n'
-      + '# a top-level YAML array of loader patch entries (id-targeted config\n'
-      + '# overrides, disables, and insert lists; `!!js` expressions allowed).\n'
-      + '- insert:\n'
-      + '    - id: custom-first-control-prompt\n'
+    return '    - id: custom-first-control-prompt\n'
       + "      name: '@deepseek-ai/dsh-custom-first-control-prompt'\n"
       + '      config:\n'
       + (sections.length > 0 ? `        sections:\n${secBlock}\n` : '        sections: []\n')
@@ -198,6 +196,45 @@ export class PanelService extends TypertRemoteService {
       + `        includeSubagents: ${includeSubagents ? 'true' : 'false'}\n`
       + `        historyMode: ${PanelService.yamlScalar(mode)}\n`
       + `        seedMode: ${PanelService.yamlScalar(seedMode)}\n`
+  }
+
+  private static buildPatch(config: PanelConfigView | undefined): string {
+    return '# Your patch layer for this dsh profile, applied after every bundle layer:\n'
+      + '# a top-level YAML array of loader patch entries (id-targeted config\n'
+      + '# overrides, disables, and insert lists; `!!js` expressions allowed).\n'
+      + '- insert:\n'
+      + PanelService.coreBlock(config)
+  }
+
+  /**
+   * Return `existingRaw` with the core `custom-first-control-prompt` row's
+   * config replaced by `config`, preserving every other line — comments, other
+   * patch entries, and especially the manually-added panel client row
+   * (`ui-custom-first-control-prompt`), which older bundles require and which a
+   * blanket overwrite dropped silently (losing the UI). When the file has no
+   * core row yet, a fresh file yields the full header block; otherwise a new
+   * `- insert:` block carrying the core row is appended.
+   */
+  private static mergeCoreBlock(existingRaw: string, config: PanelConfigView | undefined): string {
+    const core = PanelService.coreBlock(config)
+    const lines = existingRaw.split(/\r?\n/)
+    const coreIdx = lines.findIndex(l => l.trim() === '- id: custom-first-control-prompt')
+    if (coreIdx === -1) {
+      if (existingRaw.trim() === '') return PanelService.buildPatch(config)
+      const sep = existingRaw.endsWith('\n') ? '' : '\n'
+      return existingRaw + sep + '- insert:\n' + core
+    }
+    const indent = (lines[coreIdx]?.match(/^\s*/)?.[0] ?? '').length
+    // The core block ends at the next same-or-lower-indent `- ` entry (e.g. a
+    // sibling `    - id: ui-custom-first-control-prompt`); that entry is kept.
+    let end = coreIdx + 1
+    while (end < lines.length) {
+      const line = lines[end]!
+      const trimmed = line.trim()
+      if (trimmed.startsWith('- ') && (line.match(/^\s*/)?.[0] ?? '').length <= indent) break
+      end++
+    }
+    return [...lines.slice(0, coreIdx), core, ...lines.slice(end)].join('\n')
   }
 
   private async readPatch(): Promise<PanelConfigReadResult> {
@@ -243,16 +280,20 @@ export class PanelService extends TypertRemoteService {
 
   /** Write the profile patch entry regenerated from the panel's config view. */
   @Remote('config-write')
-  configWrite(agent: Agent, config: PanelConfigView): Promise<PanelWriteResult> {
+  async configWrite(agent: Agent, config: PanelConfigView): Promise<PanelWriteResult> {
     void agent
-    return this.writePatch(PanelService.buildPatch(config))
+    const existing = await this.readPatch()
+    return this.writePatch(PanelService.mergeCoreBlock(existing.ok ? existing.raw : '', config))
   }
 
-  /** Clear the configured prompt content, keeping the plugin installed. */
+  /** Clear the configured prompt content, keeping the plugin installed (and any other patch lines). */
   @Remote('config-clear')
-  configClear(agent: Agent): Promise<PanelWriteResult> {
+  async configClear(agent: Agent): Promise<PanelWriteResult> {
     void agent
-    return this.writePatch(PanelService.buildPatch({ found: true, sections: [], history: [], includeSubagents: false, historyMode: 'reapply', seedMode: 'hook' }))
+    const existing = await this.readPatch()
+    return this.writePatch(PanelService.mergeCoreBlock(existing.ok ? existing.raw : '', {
+      found: true, sections: [], history: [], includeSubagents: false, historyMode: 'reapply', seedMode: 'append',
+    }))
   }
 
   /** Import a raw patch file text wholesale. */

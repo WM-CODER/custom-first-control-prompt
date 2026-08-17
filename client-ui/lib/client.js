@@ -4157,8 +4157,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 253,
-						"column": 3
+						"line": 291,
+						"column": 9
 					}
 				},
 				{
@@ -4199,7 +4199,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 260,
+						"line": 301,
 						"column": 3
 					}
 				},
@@ -4232,7 +4232,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 239,
+						"line": 276,
 						"column": 3
 					}
 				},
@@ -4274,8 +4274,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 246,
-						"column": 3
+						"line": 283,
+						"column": 9
 					}
 				},
 				{
@@ -4307,7 +4307,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 302,
+						"line": 343,
 						"column": 9
 					}
 				},
@@ -4340,7 +4340,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 285,
+						"line": 326,
 						"column": 3
 					}
 				},
@@ -4373,7 +4373,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 270,
+						"line": 311,
 						"column": 3
 					}
 				},
@@ -4415,7 +4415,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 277,
+						"line": 318,
 						"column": 3
 					}
 				},
@@ -4457,7 +4457,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 294,
+						"line": 335,
 						"column": 3
 					}
 				}
@@ -4726,39 +4726,39 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"buttonsRow": "_8JbLLG_buttonsRow",
-			"card": "_8JbLLG_card",
-			"badgeOff": "_8JbLLG_badgeOff",
-			"requestSummary": "_8JbLLG_requestSummary",
-			"mono": "_8JbLLG_mono",
-			"tabActive": "_8JbLLG_tabActive",
-			"error": "_8JbLLG_error",
-			"dockButtons": "_8JbLLG_dockButtons",
-			"editorRow": "_8JbLLG_editorRow",
-			"rawArea": "_8JbLLG_rawArea",
 			"fieldWide": "_8JbLLG_fieldWide",
+			"dockTitle": "_8JbLLG_dockTitle",
+			"previewSection": "_8JbLLG_previewSection",
 			"success": "_8JbLLG_success",
+			"count": "_8JbLLG_count",
+			"buttonsRow": "_8JbLLG_buttonsRow",
+			"requestSummary": "_8JbLLG_requestSummary",
+			"cardTitle": "_8JbLLG_cardTitle",
+			"badgeOff": "_8JbLLG_badgeOff",
+			"rawArea": "_8JbLLG_rawArea",
+			"requestMeta": "_8JbLLG_requestMeta",
+			"requestBody": "_8JbLLG_requestBody",
+			"editorRow": "_8JbLLG_editorRow",
+			"dockHeader": "_8JbLLG_dockHeader",
+			"requestItem": "_8JbLLG_requestItem",
+			"dockBody": "_8JbLLG_dockBody",
+			"blockLabel": "_8JbLLG_blockLabel",
+			"tab": "_8JbLLG_tab",
+			"mono": "_8JbLLG_mono",
+			"error": "_8JbLLG_error",
+			"role": "_8JbLLG_role",
+			"hint": "_8JbLLG_hint",
+			"requestList": "_8JbLLG_requestList",
+			"tabs": "_8JbLLG_tabs",
+			"row": "_8JbLLG_row",
+			"dockButtons": "_8JbLLG_dockButtons",
+			"dock": "_8JbLLG_dock",
+			"tabActive": "_8JbLLG_tabActive",
+			"panel": "_8JbLLG_panel",
+			"danger": "_8JbLLG_danger",
 			"badgeOn": "_8JbLLG_badgeOn",
 			"field": "_8JbLLG_field",
-			"hint": "_8JbLLG_hint",
-			"panel": "_8JbLLG_panel",
-			"row": "_8JbLLG_row",
-			"dock": "_8JbLLG_dock",
-			"dockHeader": "_8JbLLG_dockHeader",
-			"count": "_8JbLLG_count",
-			"dockTitle": "_8JbLLG_dockTitle",
-			"dockBody": "_8JbLLG_dockBody",
-			"cardTitle": "_8JbLLG_cardTitle",
-			"previewSection": "_8JbLLG_previewSection",
-			"tab": "_8JbLLG_tab",
-			"tabs": "_8JbLLG_tabs",
-			"role": "_8JbLLG_role",
-			"blockLabel": "_8JbLLG_blockLabel",
-			"requestBody": "_8JbLLG_requestBody",
-			"requestList": "_8JbLLG_requestList",
-			"danger": "_8JbLLG_danger",
-			"requestMeta": "_8JbLLG_requestMeta",
-			"requestItem": "_8JbLLG_requestItem"
+			"card": "_8JbLLG_card"
 		};
 		//#endregion
 		//#region lib/types/client/PanelSection.js
@@ -4775,7 +4775,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				history: [],
 				includeSubagents: false,
 				historyMode: "reapply",
-				seedMode: "hook"
+				seedMode: "append"
 			};
 		}
 		/**

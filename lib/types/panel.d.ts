@@ -25,14 +25,26 @@ export declare class PanelService extends TypertRemoteService {
     private static yamlUnquote;
     private static yamlScalar;
     private static parseBlock;
+    /** Render just the core `custom-first-control-prompt` loader row (4-space indent block). */
+    private static coreBlock;
     private static buildPatch;
+    /**
+     * Return `existingRaw` with the core `custom-first-control-prompt` row's
+     * config replaced by `config`, preserving every other line — comments, other
+     * patch entries, and especially the manually-added panel client row
+     * (`ui-custom-first-control-prompt`), which older bundles require and which a
+     * blanket overwrite dropped silently (losing the UI). When the file has no
+     * core row yet, a fresh file yields the full header block; otherwise a new
+     * `- insert:` block carrying the core row is appended.
+     */
+    private static mergeCoreBlock;
     private readPatch;
     private writePatch;
     /** Read the profile patch entry. */
     configRead(agent: Agent): Promise<PanelConfigReadResult>;
     /** Write the profile patch entry regenerated from the panel's config view. */
     configWrite(agent: Agent, config: PanelConfigView): Promise<PanelWriteResult>;
-    /** Clear the configured prompt content, keeping the plugin installed. */
+    /** Clear the configured prompt content, keeping the plugin installed (and any other patch lines). */
     configClear(agent: Agent): Promise<PanelWriteResult>;
     /** Import a raw patch file text wholesale. */
     configRawImport(agent: Agent, raw: string): Promise<PanelWriteResult>;
