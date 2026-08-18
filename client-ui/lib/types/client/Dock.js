@@ -8,10 +8,11 @@ import { jsxs as _jsxs, jsx as _jsx, Fragment as _Fragment } from "react/jsx-run
 import { useState } from 'react';
 import { useRequestsPoll } from "./poll.js";
 import css from './panel.module.css';
-/** Collapsed-strip request summary: model and message count. */
+/** Collapsed-strip request summary: purpose badge (when present), model, message count. */
 function requestSummary(request) {
     const model = request.model.length > 0 ? request.model : '?';
-    return `${model} · ${request.messages.length}`;
+    const purpose = request.purpose.length > 0 ? `[${request.purpose}] ` : '';
+    return `${purpose}${model} · ${request.messages.length}`;
 }
 /** One captured request body: system prompt then the message list. */
 function RequestBody(props) {

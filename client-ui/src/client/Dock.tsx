@@ -22,10 +22,11 @@ export interface DockProps extends PropsLocale<'cfcp.panel'> {
   actions: PanelActions
 }
 
-/** Collapsed-strip request summary: model and message count. */
+/** Collapsed-strip request summary: purpose badge (when present), model, message count. */
 function requestSummary(request: PanelRequestView): string {
   const model = request.model.length > 0 ? request.model : '?'
-  return `${model} · ${request.messages.length}`
+  const purpose = request.purpose.length > 0 ? `[${request.purpose}] ` : ''
+  return `${purpose}${model} · ${request.messages.length}`
 }
 
 /** One captured request body: system prompt then the message list. */

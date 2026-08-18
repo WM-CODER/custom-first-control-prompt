@@ -50,6 +50,8 @@ export declare const en: {
     readonly requestTime: "Time";
     readonly requestSystem: "System prompt";
     readonly requestMessages: "Messages";
+    readonly requestPurpose: "Purpose";
+    readonly requestPurposeConversation: "conversation (seed injection applies)";
     readonly emptyRequests: "No captured requests. Turn listening on and send a message.";
     readonly error: "Error: {message}";
     readonly readFailed: "Read failed";

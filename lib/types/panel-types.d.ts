@@ -73,6 +73,12 @@ export interface PanelRequestView {
     provider: string;
     /** System prompt text, when the request carried one. */
     system: string;
+    /**
+     * Call purpose when the request carried one (e.g. `session-title`,
+     * `compaction`); empty for ordinary conversation requests. Conversation
+     * requests are the ones seed injection (route C) applies to.
+     */
+    purpose: string;
     /** Plaintext message list. */
     messages: {
         role: string;

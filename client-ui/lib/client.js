@@ -4067,6 +4067,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				"model": string(),
 				"provider": string(),
 				"system": string(),
+				"purpose": string(),
 				"messages": array(object({
 					"role": string(),
 					"text": string()
@@ -4083,6 +4084,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				"model": string(),
 				"provider": string(),
 				"system": string(),
+				"purpose": string(),
 				"messages": array(object({
 					"role": string(),
 					"text": string()
@@ -4100,6 +4102,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				"model": string(),
 				"provider": string(),
 				"system": string(),
+				"purpose": string(),
 				"messages": array(object({
 					"role": string(),
 					"text": string()
@@ -4117,6 +4120,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				"model": string(),
 				"provider": string(),
 				"system": string(),
+				"purpose": string(),
 				"messages": array(object({
 					"role": string(),
 					"text": string()
@@ -4157,7 +4161,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 294,
+						"line": 295,
 						"column": 9
 					}
 				},
@@ -4199,7 +4203,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 304,
+						"line": 305,
 						"column": 3
 					}
 				},
@@ -4232,7 +4236,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 279,
+						"line": 280,
 						"column": 3
 					}
 				},
@@ -4274,7 +4278,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 286,
+						"line": 287,
 						"column": 9
 					}
 				},
@@ -4307,7 +4311,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 346,
+						"line": 347,
 						"column": 9
 					}
 				},
@@ -4340,7 +4344,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 329,
+						"line": 330,
 						"column": 3
 					}
 				},
@@ -4373,7 +4377,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 314,
+						"line": 315,
 						"column": 3
 					}
 				},
@@ -4415,7 +4419,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 321,
+						"line": 322,
 						"column": 3
 					}
 				},
@@ -4457,7 +4461,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					},
 					sourceLocation: {
 						"file": "packages/context/custom-first-control-prompt/src/panel.ts",
-						"line": 338,
+						"line": 339,
 						"column": 3
 					}
 				}
@@ -4517,6 +4521,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			requestTime: "Time",
 			requestSystem: "System prompt",
 			requestMessages: "Messages",
+			requestPurpose: "Purpose",
+			requestPurposeConversation: "conversation (seed injection applies)",
 			emptyRequests: "No captured requests. Turn listening on and send a message.",
 			error: "Error: {message}",
 			readFailed: "Read failed",
@@ -4577,6 +4583,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			requestTime: "时间",
 			requestSystem: "系统提示词",
 			requestMessages: "消息",
+			requestPurpose: "用途",
+			requestPurposeConversation: "对话（应用种子注入）",
 			emptyRequests: "暂无捕获的请求。开启监听后发送一条消息试试。",
 			error: "错误：{message}",
 			readFailed: "读取失败",
@@ -4728,39 +4736,39 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"requestMeta": "fbnt9a_requestMeta",
-			"count": "fbnt9a_count",
 			"buttonsRow": "fbnt9a_buttonsRow",
-			"previewSection": "fbnt9a_previewSection",
-			"tabs": "fbnt9a_tabs",
-			"tabActive": "fbnt9a_tabActive",
-			"editorRow": "fbnt9a_editorRow",
-			"hint": "fbnt9a_hint",
-			"dock": "fbnt9a_dock",
-			"dockBody": "fbnt9a_dockBody",
-			"success": "fbnt9a_success",
-			"blockLabel": "fbnt9a_blockLabel",
-			"field": "fbnt9a_field",
 			"requestList": "fbnt9a_requestList",
-			"badgeOff": "fbnt9a_badgeOff",
-			"role": "fbnt9a_role",
-			"dockTitle": "fbnt9a_dockTitle",
-			"requestBody": "fbnt9a_requestBody",
-			"badgeOn": "fbnt9a_badgeOn",
-			"tab": "fbnt9a_tab",
-			"mono": "fbnt9a_mono",
+			"editorRow": "fbnt9a_editorRow",
 			"error": "fbnt9a_error",
-			"fieldWide": "fbnt9a_fieldWide",
-			"cardTitle": "fbnt9a_cardTitle",
-			"panel": "fbnt9a_panel",
+			"tab": "fbnt9a_tab",
+			"requestMeta": "fbnt9a_requestMeta",
+			"requestBody": "fbnt9a_requestBody",
+			"dock": "fbnt9a_dock",
+			"badgeOn": "fbnt9a_badgeOn",
 			"requestItem": "fbnt9a_requestItem",
-			"requestSummary": "fbnt9a_requestSummary",
-			"rawArea": "fbnt9a_rawArea",
-			"dockButtons": "fbnt9a_dockButtons",
+			"hint": "fbnt9a_hint",
+			"dockBody": "fbnt9a_dockBody",
+			"fieldWide": "fbnt9a_fieldWide",
+			"success": "fbnt9a_success",
 			"dockHeader": "fbnt9a_dockHeader",
 			"row": "fbnt9a_row",
+			"blockLabel": "fbnt9a_blockLabel",
+			"rawArea": "fbnt9a_rawArea",
+			"tabActive": "fbnt9a_tabActive",
 			"card": "fbnt9a_card",
-			"danger": "fbnt9a_danger"
+			"field": "fbnt9a_field",
+			"panel": "fbnt9a_panel",
+			"previewSection": "fbnt9a_previewSection",
+			"count": "fbnt9a_count",
+			"cardTitle": "fbnt9a_cardTitle",
+			"mono": "fbnt9a_mono",
+			"danger": "fbnt9a_danger",
+			"badgeOff": "fbnt9a_badgeOff",
+			"requestSummary": "fbnt9a_requestSummary",
+			"tabs": "fbnt9a_tabs",
+			"dockTitle": "fbnt9a_dockTitle",
+			"role": "fbnt9a_role",
+			"dockButtons": "fbnt9a_dockButtons"
 		};
 		//#endregion
 		//#region src/client/PanelSection.tsx
@@ -5223,6 +5231,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("summary", { children: [
 											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["#", request.id] }),
 											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+												request.purpose.length > 0 ? `[${request.purpose}] ` : "",
 												request.model || "?",
 												" · ",
 												request.messages.length,
@@ -5233,15 +5242,23 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 										] }),
 										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 											className: panel_module_css_default["requestMeta"],
-											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
-												t("requestModel"),
-												": ",
-												request.model || "—"
-											] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
-												t("requestProvider"),
-												": ",
-												request.provider || "—"
-											] })]
+											children: [
+												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+													t("requestModel"),
+													": ",
+													request.model || "—"
+												] }),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+													t("requestProvider"),
+													": ",
+													request.provider || "—"
+												] }),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+													t("requestPurpose"),
+													": ",
+													request.purpose.length > 0 ? request.purpose : t("requestPurposeConversation")
+												] })
+											]
 										}),
 										request.system.length > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 											className: panel_module_css_default["blockLabel"],
@@ -5374,9 +5391,10 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 		* offers start/stop, clear, expand/collapse, and hide (re-enabled from the
 		* plugin card in settings). All state arrives from the Host panel service.
 		*/
-		/** Collapsed-strip request summary: model and message count. */
+		/** Collapsed-strip request summary: purpose badge (when present), model, message count. */
 		function requestSummary(request) {
-			return `${request.model.length > 0 ? request.model : "?"} · ${request.messages.length}`;
+			const model = request.model.length > 0 ? request.model : "?";
+			return `${request.purpose.length > 0 ? `[${request.purpose}] ` : ""}${model} · ${request.messages.length}`;
 		}
 		/** One captured request body: system prompt then the message list. */
 		function RequestBody(props) {

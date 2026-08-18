@@ -71,6 +71,7 @@ export class PanelService extends TypertRemoteService {
         model: typeof record['model'] === 'string' ? record['model'] : '',
         provider: typeof record['provider'] === 'string' ? record['provider'] : '',
         system: typeof record['system'] === 'string' ? record['system'] : '',
+        purpose: typeof record['purpose'] === 'string' ? record['purpose'] : '',
         messages: [],
       }
       const msgs = Array.isArray(record['messages']) ? record['messages'] : []

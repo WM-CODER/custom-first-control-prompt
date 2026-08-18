@@ -337,12 +337,13 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
                     <details className={css['requestItem']} key={request.id} open={request === latest}>
                       <summary>
                         <span>#{request.id}</span>
-                        <span>{request.model || '?'} · {request.messages.length} {t('requestMessages')}</span>
+                        <span>{request.purpose.length > 0 ? `[${request.purpose}] ` : ''}{request.model || '?'} · {request.messages.length} {t('requestMessages')}</span>
                         <span>{new Date(request.time).toLocaleTimeString()}</span>
                       </summary>
                       <div className={css['requestMeta']}>
                         <span>{t('requestModel')}: {request.model || '—'}</span>
                         <span>{t('requestProvider')}: {request.provider || '—'}</span>
+                        <span>{t('requestPurpose')}: {request.purpose.length > 0 ? request.purpose : t('requestPurposeConversation')}</span>
                       </div>
                       {request.system.length > 0
                         ? (

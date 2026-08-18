@@ -31,6 +31,7 @@ function requestsView(paused = true, count = 0): PanelRequestsView {
     model: 'deepseek-chat',
     provider: 'deepseek',
     system: 'system text',
+    purpose: '',
     messages: [{ role: 'user', text: `hello ${at}` }],
   }))
   return { requests, paused, dockVisible: true }
