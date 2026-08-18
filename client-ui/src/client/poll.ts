@@ -47,8 +47,9 @@ export function useRequestsPoll(actions: PanelActions, sessionId: SessionId | un
     const load = async (): Promise<void> => {
       const result = await actions.requests(sessionId)
       if (cancelled) return
-      if (result.ok) setState({ view: result.value, error: undefined })
-      else setState(previous => ({ ...previous, error: result.error.message }))
+      if (result.ok) {
+        setState({ view: result.value, error: undefined })
+      } else setState(previous => ({ ...previous, error: result.error.message }))
     }
     void load()
     const timer = setInterval(() => { void load() }, POLL_MS)

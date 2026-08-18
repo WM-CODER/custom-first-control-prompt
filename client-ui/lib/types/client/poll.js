@@ -26,8 +26,9 @@ export function useRequestsPoll(actions, sessionId) {
             const result = await actions.requests(sessionId);
             if (cancelled)
                 return;
-            if (result.ok)
+            if (result.ok) {
                 setState({ view: result.value, error: undefined });
+            }
             else
                 setState(previous => ({ ...previous, error: result.error.message }));
         };

@@ -22,13 +22,6 @@ export interface DockProps extends PropsLocale<'cfcp.panel'> {
   actions: PanelActions
 }
 
-/** Collapsed-strip request summary: purpose badge (when present), model, message count. */
-function requestSummary(request: PanelRequestView): string {
-  const model = request.model.length > 0 ? request.model : '?'
-  const purpose = request.purpose.length > 0 ? `[${request.purpose}] ` : ''
-  return `${purpose}${model} · ${request.messages.length}`
-}
-
 /** One captured request body: system prompt then the message list. */
 function RequestBody(props: { request: PanelRequestView; t: (key: CfcpKey) => string }): ReactNode {
   const { request, t } = props
@@ -107,12 +100,20 @@ export function Dock(props: DockProps): ReactNode {
         ? (
           <div className={css['dockBody']}>
             {error !== undefined ? <div className={css['error']}>{error}</div> : null}
-            {latest === undefined
+            {requests.length === 0
               ? <div className={css['hint']}>{t('emptyRequests')}</div>
               : (
-                <div>
-                  <div className={css['requestSummary']}>#{latest.id} {requestSummary(latest)}</div>
-                  <RequestBody request={latest} t={t} />
+                <div className={css['requestList']}>
+                  {requests.map(request => (
+                    <details className={css['requestItem']} key={request.id} open={request === latest}>
+                      <summary>
+                        <span>#{request.id}</span>
+                        <span>{request.purpose.length > 0 ? `[${request.purpose}] ` : ''}{request.model || '?'} · {request.messages.length} {t('requestMessages')}</span>
+                        <span>{new Date(request.time).toLocaleTimeString()}</span>
+                      </summary>
+                      <RequestBody request={request} t={t} />
+                    </details>
+                  ))}
                 </div>
               )}
           </div>

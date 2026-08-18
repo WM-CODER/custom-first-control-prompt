@@ -4,6 +4,12 @@
 1. 核心插件（`@deepseek-ai/dsh-custom-first-control-prompt`）安装 —— 持久，重启不丢；
 2. 管理面板（正式客户端包 `@deepseek-ai/dsh-client-ui-custom-first-control-prompt`，位于 `client-ui/`）安装 —— 持久，**web 重启后仍在**，无需重装。
 
+**给 AI 的默认决策（照此执行，无需询问用户）**：按本手册装完两个包后，直接采用
+`cordis.patch.yml.template` 的补丁行（其中 `seedMode: "intercept"` 即 **C 路线**，
+免补丁、免框架钩子，npm 0.1.x 开箱即用）——不要打任何框架补丁、不要改默认路线；
+验证按 1.4 的「C 路线」分支走面板「LLM 监听」。只有用户明确要求 A/B 路线对比时才
+按「三路线机制」章节切换。
+
 > 安装/调试踩过的问题与测试方法见同目录 [DEBUG-NOTES.zh.md](DEBUG-NOTES.zh.md)
 > （含「同 id 重复 insert 会让 web 起不来」等关键坑的根因与规避）；
 > 另一台机器的完整实测流程（含 npm rc.5 打框架补丁的完全版改造）见
@@ -50,7 +56,7 @@ git clone https://github.com/WM-CODER/custom-first-control-prompt.git
 | 检查项 | 方法 | 通过标准 |
 |---|---|---|
 | dsh 版本为 `next` 线 | 看 `<DSH_HOME>/profiles/node_modules/@deepseek-ai/dsh-web-app/package.json` 的 `version` | `0.1.x`（当前 `0.1.0-rc.6`）；`0.0.1-rc.x` 老线**不兼容** |
-| 完全版钩子（`agent-loop/session-seed`） | `node -e "import('@deepseek-ai/dsh-agent-loop').then(()=>console.log('ok')).catch(e=>{console.error(e.message);process.exit(1)})"`（在 `<DSH_HOME>/profiles/web` 下执行），再 `Select-String -Path '<DSH_HOME>/profiles/node_modules/@deepseek-ai/dsh-agent-loop/lib/*.js' -Pattern 'agent-loop/session-seed'` | 能搜到 `agent-loop/session-seed` → 完全版无需补丁；**搜不到 → npm 0.1.x 发布物（含 rc.6）均无此钩子**，完全版需打框架补丁（`patches/framework-planA.patch` 通用或 rc.5 适配版，见「两档功能」） |
+| 完全版钩子（`agent-loop/session-seed`） | `node -e "import('@deepseek-ai/dsh-agent-loop').then(()=>console.log('ok')).catch(e=>{console.error(e.message);process.exit(1)})"`（在 `<DSH_HOME>/profiles/web` 下执行），再 `Select-String -Path '<DSH_HOME>/profiles/node_modules/@deepseek-ai/dsh-agent-loop/lib/*.js' -Pattern 'agent-loop/session-seed'` | **仅 Route A（`seedMode: hook`）需要**：能搜到 → 主线构建，A 路线免补丁；搜不到 → npm 0.1.x 发布物（含 rc.6）均无此钩子，A 路线需打框架补丁。**默认安装走 C 路线（`intercept`），本检查可跳过** |
 | bundle 是否自带面板行 | `Select-String -Path '<DSH_HOME>/profiles/node_modules/@deepseek-ai/dsh-web-app/cordis.patch.yml' -Pattern 'ui-custom-first-control-prompt'` | **npm 0.1.x 发布物 bundle 不带**（未命中）→ **profile 必须写面板行**（默认如此）；仅当命中（如从含该行的主线构建的 web-app）→ 不写，避免同 id 重复 insert |
 | 网络（仅方式 A 需要） | — | `dsh plugin add` 会把 `<folder>` 声明的依赖（schemastery `3.18.1`、zod `^4.4.3`、peer 的 dsh `0.1.0-rc.6` 全家桶）从 registry 解析；离线机器用方式 B（junction 到部署自身依赖） |
 
@@ -60,26 +66,26 @@ git clone https://github.com/WM-CODER/custom-first-control-prompt.git
 > → **web fail-loud 起不来**。下面的方式 A / 方式 B 都是两包同装，不要被简化描述
 > 带偏成只装核心。
 
-## 两档功能（补丁体系）
+## 三路线机制（seedMode，默认装 C 路线）
 
-同一份插件源码在两种部署环境下自动呈现两档能力：
+`history`（参考对话）的注入机制由 `seedMode` 选择，三路线共存于同一份插件，可在配置或面板里随时切换（供对比测试）：
 
-| 档位 | 部署条件 | 参考历史的表现 |
-|---|---|---|
-| **完全版（对话式，首选）** | dsh 框架含 `agent-loop/session-seed` 瀑布钩子（**仅存在于包含 `b1601bec35` 提交的主线构建**，如从 dsh 仓库本地构建的部署；**npm 0.1.x 发布物——含 rc.6——实测均无此钩子**） | 每对 user/assistant 以**真实的交替 user/assistant 消息**注入（对话式种子），首条真实消息前即成对显示 |
-| **基础档（帧）** | 部署的 dsh 框架**不含**该钩子（npm 0.1.x 发布物） | 每对 user/assistant 合并为**一条 `<custom-history>` 帧**（user 角色消息）注入 |
+| 路线 | `seedMode` | 框架要求 | 会话日志 | 聊天界面 | 适用 |
+|---|---|---|---|---|---|
+| **C（默认安装，推荐）** | `intercept` | **无**（npm 0.1.x 开箱即用） | **零写入** | 不可见（走请求路径；用面板「LLM 监听」验证） | npm 0.1.x 部署的**首选**：turn 不冲突、fork 正常、压缩免疫 |
+| B | `append` | 无 | 写入 turn 1..N | 可见 | 对照测试用；已知缺陷：未打补丁框架上真实首 turn 与种子 turn 1 撞号，真实回复遮蔽注入回复 |
+| A | `hook` | 含 `agent-loop/session-seed` 钩子的**主线构建**，或打 `patches/framework-planA*.patch` | 写入 turn 1..N + `session/end-seed` | 可见 | 主线构建部署的最优解（日志自包含、turn 从 N+1 起） |
 
 说明：
-- `patches/framework-planA.patch` —— 完全版框架补丁（通用意图）：对 dsh 框架源码
-  （`packages/core/agent-loop`、`packages/core/session`）执行
-  `git apply patches/framework-planA.patch`，重建 host 库并重启 web 后即升至完全版。
-  **注意基线**：该补丁未标注基线版本，在 rc.5 官方源码上无法直接应用；已随附
-  rc.5 适配版 `patches/framework-planA-rc5.patch`（正/反向均可应用）。按部署框架版本
-  选择；当前主线已内置钩子，无需补丁。
-- `patches/plugin-planA-upgrade.patch` —— 插件升级补丁：仅当你手中是**旧版插件源码**
-  （仅帧注入）时需要，把它升级为对话式种子版（含 `buildSeedEvents`、钩子监听、伴生
-  不变式更新、`plan-a.spec.ts`）。本文件夹源码已是升级后版本，通常无需此补丁。
-- 两档下 sections（系统段）与历史配置字段完全一致；框架无钩子时插件自动走帧路径，不存在报错。
+- **默认按 C 路线安装**：`cordis.patch.yml.template` 已带 `seedMode: "intercept"`。
+  npm 0.1.x 发布物（含 rc.6）**没有** `agent-loop/session-seed` 钩子（实测解包确认），
+  这正是 C 路线存在的原因——它完全走 `llm/stream` 请求路径，不依赖任何框架改动。
+- 三路线下 `sections`（系统段）配置完全一致；`historyMode` 在 intercept/append 下被忽略
+  （仅 A 路线的压缩回退使用），语义矩阵见 README「对话式种子机制（A/B/C 路线）」。
+- `patches/framework-planA.patch` / `patches/framework-planA-rc5.patch` —— **仅 A 路线需要**
+  的框架补丁（给不含钩子的框架源码加 `agent-loop/session-seed` waterfall）。选 C 路线
+  （默认）时**跳过打补丁**这步。
+- `patches/plugin-planA-upgrade.patch` —— 历史升级补丁，本文件夹源码已包含三路线，无需它。
 
 ## 步骤 1：核心插件（持久安装）
 
@@ -130,11 +136,24 @@ typert-loader 阶段报 `ERR_MODULE_NOT_FOUND`。
   `DEBUG-NOTES.zh.md` §1.3。
 修改后 web 热监听会自动重载（几秒）；必要时重启 web。
 
-1.4 **验证（完全版 / 对话式种子）**：新开一个会话，**发送第一条真实消息之前**，对话里
-应直接看到**真实的 user/assistant 交替消息**（模板里的每对配置各占一轮，轮次从 1 开始）；
-发送第一条消息后，回复应能引用这些参考内容。`<custom-history>` 帧文本只在基础档、或
-`reapply`/`per-request` 的压缩遮蔽回退、或旧会话残留中出现——新会话的完全版里看不到它。
-更多验证手段见 `DEBUG-NOTES.zh.md` §4（门禁 / 单测 / 独立测试实例 + API 链路）。
+1.4 **验证（按 seedMode 分支）**：
+
+- **C 路线（`intercept`，默认）——用面板「LLM 监听」验证**：聊天 transcript **看不到**
+  种子消息是预期行为（C 路线只走请求路径，零日志写入）。正确验证方式：
+  1. 对话输入框上方展开「自定义提示词」dock 条，点「开始」监听；
+  2. 新开会话发送第一条真实消息；
+  3. dock 展开区应出现**完整请求列表**：普通对话请求（无 `[purpose]` 徽标，如
+     `#3 · 9 条消息`——数量 = 2×种子对 + 真实消息序列）点开后**前几条就是注入的
+     user/assistant 种子消息**；`[session-title]` 等辅助请求（相隔毫秒级的那条）
+     **不含**注入是设计行为（scope 过滤，避免污染标题生成）；
+  4. 模型的回复应能引用种子内容（如答出「用户测试提示词1」相关上下文）。
+  注意请求按到达顺序编号，最新一条默认展开。
+- **B / A 路线——用 transcript 验证**：新开会话，发送第一条真实消息**之前**，对话里
+  应直接看到真实的 user/assistant 交替消息（每对配置各占一轮，轮次从 1 开始）；发送后
+  回复应能引用这些参考内容。B 路线在未打补丁框架上可能出现真实回复遮蔽注入回复
+  （已知缺陷，见 README 已知限制）。
+- `<custom-history>` 帧文本只在 A 路线 `reapply`/`per-request` 的压缩遮蔽回退或旧会话
+  残留中出现。更多验证手段见 `DEBUG-NOTES.zh.md` §4（门禁 / 单测 / 独立测试实例 + API 链路）。
 
 ## 步骤 2：管理面板（正式客户端包）
 
@@ -155,8 +174,11 @@ New-Item -ItemType Junction -Path '<DSH_HOME>\profiles\web\node_modules\@deepsee
 2.4 **验证**：
 - **对话输入框上方**：可展开/收起的「自定义提示词」条（`conversation.input.dock`），
   **监听默认关闭**，点「开始」后显示最近 30 条**真实 LLM 明文请求**（`llm/stream` 采集），
-  条上有开始/停止、清空、隐藏按钮；
-- 设置 → 「自定义优先控制提示词」页面：预览 / 配置编辑 / RAW / **LLM 监听**（同样有开始/停止、清空按钮）；
+  条上有开始/停止、清空、隐藏按钮；展开后是**完整请求列表**（每条一行，最新默认展开），
+  行内显示 `#序号 · [purpose 徽标] 模型 · 消息数 · 时间`，点开任一条看系统提示词与
+  全部消息正文；
+- 设置 → 「自定义优先控制提示词」页面：预览 / 配置编辑（含 seedMode 三路线下拉）/ RAW /
+  **LLM 监听**（同样有开始/停止、清空按钮）；
 - 设置 → 插件 → `@deepseek-ai/dsh-custom-first-control-prompt` 卡片：「显示输入框上方条状 inspector」
   与「监听 LLM 请求」两个开关（被隐藏的 dock 条从这里恢复）；
 - 若插件未安装（profile 无插件行），面板自动保持休眠，不影响 web 启动。

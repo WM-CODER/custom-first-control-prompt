@@ -4,8 +4,8 @@ window.__ModuleLoader__.load({
 		var module = { exports: {} };
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-		let react = require("react");
 		let react_jsx_runtime = require("react/jsx-runtime");
+		let react = require("react");
 		//#region ../../../node_modules/.pnpm/zod@4.4.3/node_modules/zod/v4/core/core.js
 		var _a$1;
 		function $constructor(name, initializer, params) {
@@ -4468,7 +4468,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			]
 		};
 		//#endregion
-		//#region src/client/locales.ts
+		//#region lib/types/client/locales.js
 		/**
 		* Copy dictionaries for the panel surface. Every visible string in the
 		* settings section, the plugin card, and the composer dock comes from here.
@@ -4598,7 +4598,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			configNotFound: "当前 profile patch 文件还没有 custom-first-control-prompt 条目，保存后会自动创建。"
 		};
 		//#endregion
-		//#region src/client/actions.ts
+		//#region lib/types/client/actions.js
 		/** Assembly-level failure shape for a namespace that never mounted. */
 		function unavailable(method) {
 			return {
@@ -4655,7 +4655,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			};
 		}
 		//#endregion
-		//#region src/client/poll.ts
+		//#region lib/types/client/poll.js
 		/**
 		* Shared request-ring polling: one bounded Remote call per interval, error
 		* carried as state (never thrown). Used by the dock, the plugin card, and
@@ -4736,42 +4736,42 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"buttonsRow": "fbnt9a_buttonsRow",
-			"requestList": "fbnt9a_requestList",
-			"editorRow": "fbnt9a_editorRow",
-			"error": "fbnt9a_error",
-			"tab": "fbnt9a_tab",
-			"requestMeta": "fbnt9a_requestMeta",
-			"requestBody": "fbnt9a_requestBody",
-			"dock": "fbnt9a_dock",
+			"mono": "fbnt9a_mono",
 			"badgeOn": "fbnt9a_badgeOn",
-			"requestItem": "fbnt9a_requestItem",
-			"hint": "fbnt9a_hint",
-			"dockBody": "fbnt9a_dockBody",
-			"fieldWide": "fbnt9a_fieldWide",
-			"success": "fbnt9a_success",
-			"dockHeader": "fbnt9a_dockHeader",
-			"row": "fbnt9a_row",
-			"blockLabel": "fbnt9a_blockLabel",
-			"rawArea": "fbnt9a_rawArea",
-			"tabActive": "fbnt9a_tabActive",
 			"card": "fbnt9a_card",
+			"dockBody": "fbnt9a_dockBody",
+			"badgeOff": "fbnt9a_badgeOff",
 			"field": "fbnt9a_field",
-			"panel": "fbnt9a_panel",
+			"rawArea": "fbnt9a_rawArea",
+			"requestBody": "fbnt9a_requestBody",
+			"error": "fbnt9a_error",
 			"previewSection": "fbnt9a_previewSection",
 			"count": "fbnt9a_count",
-			"cardTitle": "fbnt9a_cardTitle",
-			"mono": "fbnt9a_mono",
-			"danger": "fbnt9a_danger",
-			"badgeOff": "fbnt9a_badgeOff",
+			"dock": "fbnt9a_dock",
+			"success": "fbnt9a_success",
+			"tabActive": "fbnt9a_tabActive",
 			"requestSummary": "fbnt9a_requestSummary",
+			"dockHeader": "fbnt9a_dockHeader",
+			"editorRow": "fbnt9a_editorRow",
+			"buttonsRow": "fbnt9a_buttonsRow",
 			"tabs": "fbnt9a_tabs",
-			"dockTitle": "fbnt9a_dockTitle",
 			"role": "fbnt9a_role",
-			"dockButtons": "fbnt9a_dockButtons"
+			"panel": "fbnt9a_panel",
+			"requestList": "fbnt9a_requestList",
+			"dockButtons": "fbnt9a_dockButtons",
+			"fieldWide": "fbnt9a_fieldWide",
+			"dockTitle": "fbnt9a_dockTitle",
+			"blockLabel": "fbnt9a_blockLabel",
+			"hint": "fbnt9a_hint",
+			"tab": "fbnt9a_tab",
+			"requestMeta": "fbnt9a_requestMeta",
+			"danger": "fbnt9a_danger",
+			"row": "fbnt9a_row",
+			"cardTitle": "fbnt9a_cardTitle",
+			"requestItem": "fbnt9a_requestItem"
 		};
 		//#endregion
-		//#region src/client/PanelSection.tsx
+		//#region lib/types/client/PanelSection.js
 		/**
 		* Settings section: preview / config / RAW / LLM-listening tabs over the Host
 		* panel service. Root-scoped; the owning session resolves from the session
@@ -4910,20 +4910,20 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				}
 			];
 			const renderTab = () => {
-				if (sessionId === void 0) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				if (sessionId === void 0) return (0, react_jsx_runtime.jsx)("div", {
 					className: panel_module_css_default["hint"],
 					children: t("noSession")
 				});
 				switch (tab) {
-					case "preview": return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					case "preview": return (0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["hint"],
 						children: t("previewNote")
-					}), preview.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					}), preview.length === 0 ? (0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["hint"],
 						children: t("previewEmpty")
-					}) : preview.map((section) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					}) : preview.map((section) => (0, react_jsx_runtime.jsxs)("div", {
 						className: panel_module_css_default["previewSection"],
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						children: [(0, react_jsx_runtime.jsxs)("div", {
 							className: panel_module_css_default["blockLabel"],
 							children: [
 								section.name,
@@ -4931,31 +4931,31 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 								section.order,
 								")"
 							]
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("pre", {
+						}), (0, react_jsx_runtime.jsx)("pre", {
 							className: panel_module_css_default["mono"],
 							children: section.text
 						})]
 					}, section.name))] });
-					case "config": return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					case "config": return (0, react_jsx_runtime.jsxs)("div", { children: [
+						(0, react_jsx_runtime.jsx)("div", {
 							className: panel_module_css_default["blockLabel"],
 							children: "sections"
 						}),
-						config.sections.map((section, at) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						config.sections.map((section, at) => (0, react_jsx_runtime.jsxs)("div", {
 							className: panel_module_css_default["editorRow"],
 							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+								(0, react_jsx_runtime.jsxs)("label", {
 									className: panel_module_css_default["field"],
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("sectionName") }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									children: [(0, react_jsx_runtime.jsx)("span", { children: t("sectionName") }), (0, react_jsx_runtime.jsx)("input", {
 										value: section.name,
 										onChange: (event) => {
 											setSection(at, { name: event.target.value });
 										}
 									})]
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+								(0, react_jsx_runtime.jsxs)("label", {
 									className: panel_module_css_default["field"],
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("sectionOrder") }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									children: [(0, react_jsx_runtime.jsx)("span", { children: t("sectionOrder") }), (0, react_jsx_runtime.jsx)("input", {
 										type: "number",
 										value: section.order,
 										onChange: (event) => {
@@ -4964,9 +4964,9 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 										}
 									})]
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+								(0, react_jsx_runtime.jsxs)("label", {
 									className: panel_module_css_default["field"],
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("sectionEnabled") }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									children: [(0, react_jsx_runtime.jsx)("span", { children: t("sectionEnabled") }), (0, react_jsx_runtime.jsx)("input", {
 										type: "checkbox",
 										checked: section.enabled,
 										onChange: (event) => {
@@ -4974,16 +4974,16 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 										}
 									})]
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+								(0, react_jsx_runtime.jsxs)("label", {
 									className: panel_module_css_default["fieldWide"],
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("sectionText") }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+									children: [(0, react_jsx_runtime.jsx)("span", { children: t("sectionText") }), (0, react_jsx_runtime.jsx)("textarea", {
 										value: section.text,
 										onChange: (event) => {
 											setSection(at, { text: event.target.value });
 										}
 									})]
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								(0, react_jsx_runtime.jsx)("button", {
 									type: "button",
 									className: panel_module_css_default["danger"],
 									onClick: () => {
@@ -4996,7 +4996,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 								})
 							]
 						}, at)),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						(0, react_jsx_runtime.jsx)("button", {
 							type: "button",
 							onClick: () => {
 								setConfig((previous) => ({
@@ -5011,32 +5011,32 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 							},
 							children: t("addSection")
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						(0, react_jsx_runtime.jsx)("div", {
 							className: panel_module_css_default["blockLabel"],
 							children: "history"
 						}),
-						config.history.map((pair, at) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						config.history.map((pair, at) => (0, react_jsx_runtime.jsxs)("div", {
 							className: panel_module_css_default["editorRow"],
 							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+								(0, react_jsx_runtime.jsxs)("label", {
 									className: panel_module_css_default["fieldWide"],
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("historyUser") }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+									children: [(0, react_jsx_runtime.jsx)("span", { children: t("historyUser") }), (0, react_jsx_runtime.jsx)("textarea", {
 										value: pair.user,
 										onChange: (event) => {
 											setPair(at, { user: event.target.value });
 										}
 									})]
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+								(0, react_jsx_runtime.jsxs)("label", {
 									className: panel_module_css_default["fieldWide"],
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("historyAssistant") }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+									children: [(0, react_jsx_runtime.jsx)("span", { children: t("historyAssistant") }), (0, react_jsx_runtime.jsx)("textarea", {
 										value: pair.assistant,
 										onChange: (event) => {
 											setPair(at, { assistant: event.target.value });
 										}
 									})]
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								(0, react_jsx_runtime.jsx)("button", {
 									type: "button",
 									className: panel_module_css_default["danger"],
 									onClick: () => {
@@ -5049,7 +5049,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 								})
 							]
 						}, at)),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						(0, react_jsx_runtime.jsx)("button", {
 							type: "button",
 							onClick: () => {
 								setConfig((previous) => ({
@@ -5062,9 +5062,9 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 							},
 							children: t("addPair")
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+						(0, react_jsx_runtime.jsxs)("label", {
 							className: panel_module_css_default["row"],
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+							children: [(0, react_jsx_runtime.jsx)("input", {
 								type: "checkbox",
 								checked: config.includeSubagents,
 								onChange: (event) => {
@@ -5073,11 +5073,11 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 										includeSubagents: event.target.checked
 									}));
 								}
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("includeSubagents") })]
+							}), (0, react_jsx_runtime.jsx)("span", { children: t("includeSubagents") })]
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+						(0, react_jsx_runtime.jsxs)("label", {
 							className: panel_module_css_default["row"],
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("historyMode") }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("select", {
+							children: [(0, react_jsx_runtime.jsx)("span", { children: t("historyMode") }), (0, react_jsx_runtime.jsx)("select", {
 								value: config.historyMode,
 								onChange: (event) => {
 									setConfig((previous) => ({
@@ -5098,15 +5098,15 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 										value: "per-request",
 										label: "modePerRequest"
 									}
-								].map((option) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+								].map((option) => (0, react_jsx_runtime.jsx)("option", {
 									value: option.value,
 									children: t(option.label)
 								}, option.value))
 							})]
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+						(0, react_jsx_runtime.jsxs)("label", {
 							className: panel_module_css_default["row"],
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("seedMode") }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("select", {
+							children: [(0, react_jsx_runtime.jsx)("span", { children: t("seedMode") }), (0, react_jsx_runtime.jsx)("select", {
 								value: config.seedMode,
 								onChange: (event) => {
 									setConfig((previous) => ({
@@ -5127,22 +5127,22 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 										value: "intercept",
 										label: "seedModeIntercept"
 									}
-								].map((option) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+								].map((option) => (0, react_jsx_runtime.jsx)("option", {
 									value: option.value,
 									children: t(option.label)
 								}, option.value))
 							})]
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						(0, react_jsx_runtime.jsxs)("div", {
 							className: panel_module_css_default["buttonsRow"],
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							children: [(0, react_jsx_runtime.jsx)("button", {
 								type: "button",
 								disabled: busy,
 								onClick: () => {
 									save();
 								},
 								children: t("save")
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							}), (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
 								disabled: busy,
 								className: clearArmed ? panel_module_css_default["danger"] : "",
@@ -5154,12 +5154,12 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 							})]
 						})
 					] });
-					case "raw": return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					case "raw": return (0, react_jsx_runtime.jsxs)("div", { children: [
+						(0, react_jsx_runtime.jsx)("div", {
 							className: panel_module_css_default["hint"],
 							children: path.length > 0 ? path : t("configNotFound")
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+						(0, react_jsx_runtime.jsx)("textarea", {
 							className: panel_module_css_default["rawArea"],
 							value: raw,
 							onChange: (event) => {
@@ -5167,9 +5167,9 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 							},
 							spellCheck: false
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						(0, react_jsx_runtime.jsx)("div", {
 							className: panel_module_css_default["buttonsRow"],
-							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							children: (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
 								disabled: busy,
 								onClick: () => {
@@ -5183,11 +5183,11 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 						const requests = requestsView?.requests ?? [];
 						const paused = requestsView?.paused ?? true;
 						const latest = requests[requests.length - 1];
-						return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						return (0, react_jsx_runtime.jsxs)("div", { children: [
+							(0, react_jsx_runtime.jsxs)("div", {
 								className: panel_module_css_default["buttonsRow"],
 								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									(0, react_jsx_runtime.jsx)("button", {
 										type: "button",
 										onClick: () => {
 											actions.setPaused(sessionId, !paused).then(() => {
@@ -5196,7 +5196,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 										},
 										children: paused ? t("start") : t("stop")
 									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									(0, react_jsx_runtime.jsx)("button", {
 										type: "button",
 										onClick: () => {
 											actions.clearRequests(sessionId).then(() => {
@@ -5205,7 +5205,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 										},
 										children: t("clear")
 									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+									(0, react_jsx_runtime.jsxs)("span", {
 										className: panel_module_css_default["count"],
 										children: [
 											requests.length,
@@ -5215,22 +5215,22 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 									})
 								]
 							}),
-							requestsError !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							requestsError !== void 0 ? (0, react_jsx_runtime.jsx)("div", {
 								className: panel_module_css_default["error"],
 								children: requestsError
 							}) : null,
-							requests.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							requests.length === 0 ? (0, react_jsx_runtime.jsx)("div", {
 								className: panel_module_css_default["hint"],
 								children: t("emptyRequests")
-							}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							}) : (0, react_jsx_runtime.jsx)("div", {
 								className: panel_module_css_default["requestList"],
-								children: requests.map((request) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("details", {
+								children: requests.map((request) => (0, react_jsx_runtime.jsxs)("details", {
 									className: panel_module_css_default["requestItem"],
 									open: request === latest,
 									children: [
-										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("summary", { children: [
-											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["#", request.id] }),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+										(0, react_jsx_runtime.jsxs)("summary", { children: [
+											(0, react_jsx_runtime.jsxs)("span", { children: ["#", request.id] }),
+											(0, react_jsx_runtime.jsxs)("span", { children: [
 												request.purpose.length > 0 ? `[${request.purpose}] ` : "",
 												request.model || "?",
 												" · ",
@@ -5238,39 +5238,39 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 												" ",
 												t("requestMessages")
 											] }),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: new Date(request.time).toLocaleTimeString() })
+											(0, react_jsx_runtime.jsx)("span", { children: new Date(request.time).toLocaleTimeString() })
 										] }),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										(0, react_jsx_runtime.jsxs)("div", {
 											className: panel_module_css_default["requestMeta"],
 											children: [
-												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+												(0, react_jsx_runtime.jsxs)("span", { children: [
 													t("requestModel"),
 													": ",
 													request.model || "—"
 												] }),
-												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+												(0, react_jsx_runtime.jsxs)("span", { children: [
 													t("requestProvider"),
 													": ",
 													request.provider || "—"
 												] }),
-												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+												(0, react_jsx_runtime.jsxs)("span", { children: [
 													t("requestPurpose"),
 													": ",
 													request.purpose.length > 0 ? request.purpose : t("requestPurposeConversation")
 												] })
 											]
 										}),
-										request.system.length > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										request.system.length > 0 ? (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)("div", {
 											className: panel_module_css_default["blockLabel"],
 											children: t("requestSystem")
-										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("pre", {
+										}), (0, react_jsx_runtime.jsx)("pre", {
 											className: panel_module_css_default["mono"],
 											children: request.system
 										})] }) : null,
-										request.messages.map((message, at) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("pre", {
+										request.messages.map((message, at) => (0, react_jsx_runtime.jsxs)("pre", {
 											className: panel_module_css_default["mono"],
 											children: [
-												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+												(0, react_jsx_runtime.jsx)("span", {
 													className: panel_module_css_default["role"],
 													children: message.role
 												}),
@@ -5285,13 +5285,13 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}
 				}
 			};
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			return (0, react_jsx_runtime.jsxs)("div", {
 				className: panel_module_css_default["panel"],
 				children: [
-					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					(0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["tabs"],
 						role: "tablist",
-						children: tabs.map(({ key, label }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						children: tabs.map(({ key, label }) => (0, react_jsx_runtime.jsx)("button", {
 							type: "button",
 							role: "tab",
 							"aria-selected": tab === key,
@@ -5302,11 +5302,11 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 							children: t(label)
 						}, key))
 					}),
-					notice !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					notice !== void 0 ? (0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["success"],
 						children: notice
 					}) : null,
-					error !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					error !== void 0 ? (0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["error"],
 						children: t("error", { message: error })
 					}) : null,
@@ -5315,7 +5315,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			});
 		}
 		//#endregion
-		//#region src/client/PluginCard.tsx
+		//#region lib/types/client/PluginCard.js
 		/**
 		* Render the plugin card.
 		* @param props - composed slot props.
@@ -5332,32 +5332,32 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					refresh();
 				});
 			};
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			return (0, react_jsx_runtime.jsxs)("div", {
 				className: panel_module_css_default["card"],
 				children: [
-					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					(0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["cardTitle"],
 						children: t("cardTitle")
 					}),
-					disabled ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					disabled ? (0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["hint"],
 						children: t("noSession")
 					}) : null,
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+					(0, react_jsx_runtime.jsxs)("label", {
 						className: panel_module_css_default["row"],
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+						children: [(0, react_jsx_runtime.jsx)("input", {
 							type: "checkbox",
 							checked: dockVisible,
 							disabled,
 							onChange: (event) => {
 								if (sessionId !== void 0) run(actions.setDockVisible(sessionId, event.target.checked));
 							}
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("toggleDock") })]
+						}), (0, react_jsx_runtime.jsx)("span", { children: t("toggleDock") })]
 					}),
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+					(0, react_jsx_runtime.jsxs)("label", {
 						className: panel_module_css_default["row"],
 						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+							(0, react_jsx_runtime.jsx)("input", {
 								type: "checkbox",
 								checked: !paused,
 								disabled,
@@ -5365,8 +5365,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 									if (sessionId !== void 0) run(actions.setPaused(sessionId, !event.target.checked));
 								}
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("toggleListen") }),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+							(0, react_jsx_runtime.jsx)("span", { children: t("toggleListen") }),
+							(0, react_jsx_runtime.jsxs)("span", {
 								className: panel_module_css_default["count"],
 								children: [
 									view?.requests.length ?? 0,
@@ -5376,7 +5376,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 							})
 						]
 					}),
-					error !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					error !== void 0 ? (0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["error"],
 						children: error
 					}) : null
@@ -5384,58 +5384,53 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			});
 		}
 		//#endregion
-		//#region src/client/Dock.tsx
+		//#region lib/types/client/Dock.js
 		/**
 		* Composer dock strip: a collapsible bar above the message input showing the
 		* panel's live request-listening state. Listening defaults to off; the strip
 		* offers start/stop, clear, expand/collapse, and hide (re-enabled from the
 		* plugin card in settings). All state arrives from the Host panel service.
 		*/
-		/** Collapsed-strip request summary: purpose badge (when present), model, message count. */
-		function requestSummary(request) {
-			const model = request.model.length > 0 ? request.model : "?";
-			return `${request.purpose.length > 0 ? `[${request.purpose}] ` : ""}${model} · ${request.messages.length}`;
-		}
 		/** One captured request body: system prompt then the message list. */
 		function RequestBody(props) {
 			const { request, t } = props;
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			return (0, react_jsx_runtime.jsxs)("div", {
 				className: panel_module_css_default["requestBody"],
 				children: [
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					(0, react_jsx_runtime.jsxs)("div", {
 						className: panel_module_css_default["requestMeta"],
 						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+							(0, react_jsx_runtime.jsxs)("span", { children: [
 								t("requestModel"),
 								": ",
 								request.model || "—"
 							] }),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+							(0, react_jsx_runtime.jsxs)("span", { children: [
 								t("requestProvider"),
 								": ",
 								request.provider || "—"
 							] }),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+							(0, react_jsx_runtime.jsxs)("span", { children: [
 								t("requestTime"),
 								": ",
 								new Date(request.time).toLocaleTimeString()
 							] })
 						]
 					}),
-					request.system.length > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					request.system.length > 0 ? (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["blockLabel"],
 						children: t("requestSystem")
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("pre", {
+					}), (0, react_jsx_runtime.jsx)("pre", {
 						className: panel_module_css_default["mono"],
 						children: request.system
 					})] }) : null,
-					request.messages.length > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					request.messages.length > 0 ? (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["blockLabel"],
 						children: t("requestMessages")
-					}), request.messages.map((message, at) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("pre", {
+					}), request.messages.map((message, at) => (0, react_jsx_runtime.jsxs)("pre", {
 						className: panel_module_css_default["mono"],
 						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+							(0, react_jsx_runtime.jsx)("span", {
 								className: panel_module_css_default["role"],
 								children: message.role
 							}),
@@ -5464,11 +5459,11 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					refresh();
 				});
 			};
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			return (0, react_jsx_runtime.jsxs)("div", {
 				className: panel_module_css_default["dock"],
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				children: [(0, react_jsx_runtime.jsxs)("div", {
 					className: panel_module_css_default["dockHeader"],
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+					children: [(0, react_jsx_runtime.jsxs)("button", {
 						type: "button",
 						className: panel_module_css_default["dockTitle"],
 						onClick: () => {
@@ -5477,12 +5472,12 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 						"aria-expanded": expanded,
 						title: expanded ? t("collapse") : t("expand"),
 						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("dockLabel") }),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+							(0, react_jsx_runtime.jsx)("span", { children: t("dockLabel") }),
+							(0, react_jsx_runtime.jsx)("span", {
 								className: paused ? panel_module_css_default["badgeOff"] : panel_module_css_default["badgeOn"],
 								children: paused ? t("listeningOff") : t("listeningOn")
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+							(0, react_jsx_runtime.jsxs)("span", {
 								className: panel_module_css_default["count"],
 								children: [
 									requests.length,
@@ -5491,24 +5486,24 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 								]
 							})
 						]
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					}), (0, react_jsx_runtime.jsxs)("div", {
 						className: panel_module_css_default["dockButtons"],
 						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							(0, react_jsx_runtime.jsx)("button", {
 								type: "button",
 								onClick: () => {
 									run(actions.setPaused(sessionId, !paused));
 								},
 								children: paused ? t("start") : t("stop")
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							(0, react_jsx_runtime.jsx)("button", {
 								type: "button",
 								onClick: () => {
 									run(actions.clearRequests(sessionId));
 								},
 								children: t("clear")
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							(0, react_jsx_runtime.jsx)("button", {
 								type: "button",
 								onClick: () => {
 									run(actions.setDockVisible(sessionId, false));
@@ -5517,31 +5512,41 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 							})
 						]
 					})]
-				}), expanded ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				}), expanded ? (0, react_jsx_runtime.jsxs)("div", {
 					className: panel_module_css_default["dockBody"],
-					children: [error !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					children: [error !== void 0 ? (0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["error"],
 						children: error
-					}) : null, latest === void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					}) : null, requests.length === 0 ? (0, react_jsx_runtime.jsx)("div", {
 						className: panel_module_css_default["hint"],
 						children: t("emptyRequests")
-					}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: panel_module_css_default["requestSummary"],
-						children: [
-							"#",
-							latest.id,
-							" ",
-							requestSummary(latest)
-						]
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(RequestBody, {
-						request: latest,
-						t
-					})] })]
+					}) : (0, react_jsx_runtime.jsx)("div", {
+						className: panel_module_css_default["requestList"],
+						children: requests.map((request) => (0, react_jsx_runtime.jsxs)("details", {
+							className: panel_module_css_default["requestItem"],
+							open: request === latest,
+							children: [(0, react_jsx_runtime.jsxs)("summary", { children: [
+								(0, react_jsx_runtime.jsxs)("span", { children: ["#", request.id] }),
+								(0, react_jsx_runtime.jsxs)("span", { children: [
+									request.purpose.length > 0 ? `[${request.purpose}] ` : "",
+									request.model || "?",
+									" · ",
+									request.messages.length,
+									" ",
+									t("requestMessages")
+								] }),
+								(0, react_jsx_runtime.jsx)("span", { children: new Date(request.time).toLocaleTimeString() })
+							] }), (0, react_jsx_runtime.jsx)(RequestBody, {
+								request,
+								t
+							})]
+						}, request.id))
+					})]
 				}) : null]
 			});
 		}
 		//#endregion
-		//#region src/client/index.ts
+		//#region lib/types/client/index.js
 		/** Dictionary namespace owned by this plugin. */
 		const NS = "cfcp.panel";
 		/**

@@ -61,6 +61,36 @@ fork 正常；web stderr 无 invariant 失败。
 （buildSeedMessages 单测）与 `tests/intercept-e2e.spec.ts`（装配：注入形态/log 干净/
 每请求一致/purpose 与 hand-built 过滤/subagent 过滤/fork 回归）。
 
+## 0.2 Changelog 2026-08-19：面板「第一条消息看不到注入请求」定论 + dock 完整列表
+
+**现象**：用户开监听后发第一条真实消息，面板只看到 `#2 [session-title]`（无注入），
+看不到带注入的对话请求；第二条消息起才看到 `#3`（带注入）。**模型侧注入一直正常**
+（模型回复能引用种子内容）。
+
+**排查过程（三轮）**：
+1. 第一轮误判为 session-title 干扰 → 加 `purpose` 字段区分请求（保留为正式能力）；
+2. 第二轮加服务端 waterfall trace（`src/trace.ts`，写 `~/.dsh/logs/cfcp-trace.log`）
+   证明 **#1 对话请求确实进了 ring**（entry=1, msgs=7, seed 标记为真）——采集层无丢失；
+3. 第三轮锁定 UI 缺陷：dock 展开区**只渲染 latest 一条**请求，而 #1（对话+注入）与
+   #2（title）相隔仅 2ms，latest 永远是 #2，#1 被 UI 折叠遮蔽。
+
+**修复**：`Dock.tsx` 展开区从单条改为**完整请求列表**（`requests.map`，每条一行、
+最新默认展开 `open={request === latest}`）；行内显示 `#序号 · [purpose] 模型 · 消息数 · 时间`。
+删除不再使用的 requestSummary 单条渲染。临时 trace（trace.ts、poll.ts console.log、
+index.ts/panel.ts trace 调用）在验证通过后已全部移除。
+
+**派生结论（设计行为，非 bug）**：`[session-title]` 辅助请求**不含**注入是 C 路线
+scope 过滤的正确行为（`purpose !== undefined` 即放行）——避免污染标题生成与浪费 token。
+首条消息触发「对话 + title」两个请求，面板应看到两个条目，只有对话那条带注入。
+
+**构建坑（重要，构建产物相关）**：per-package `pnpm exec tsdown`（entry 指向 `src/`）
+会绕过根 workspace 构建的装饰器 lowering，产出**裸 `@Remote(`** 的 `lib/index.js`
+（Node 无法解析，web 起不来）——这正是 §1.1 记录的坑。**正确构建方式**：仓库根
+`pnpm run build:lib:host`（tsc + tsdown workspace 模式 + typertPlugin），
+包级 `tsdown.config.ts` 已删除以防再次误用。构建后必须跑 `verify-build.ps1` 五项门禁
+（本次正是门禁 #2「无裸 @Remote」拦住了坏产物），并删除未被 index.js 引用的
+stale `seed-*.js` chunk（`clean: false` 堆积）。
+
 
 
 ## 1. Web 拉起阻碍（fail-loud 的各类根因）

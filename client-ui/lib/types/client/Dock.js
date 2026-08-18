@@ -8,12 +8,6 @@ import { jsxs as _jsxs, jsx as _jsx, Fragment as _Fragment } from "react/jsx-run
 import { useState } from 'react';
 import { useRequestsPoll } from "./poll.js";
 import css from './panel.module.css';
-/** Collapsed-strip request summary: purpose badge (when present), model, message count. */
-function requestSummary(request) {
-    const model = request.model.length > 0 ? request.model : '?';
-    const purpose = request.purpose.length > 0 ? `[${request.purpose}] ` : '';
-    return `${purpose}${model} · ${request.messages.length}`;
-}
 /** One captured request body: system prompt then the message list. */
 function RequestBody(props) {
     const { request, t } = props;
@@ -41,9 +35,9 @@ export function Dock(props) {
         void promise.then(() => { refresh(); });
     };
     return (_jsxs("div", { className: css['dock'], children: [_jsxs("div", { className: css['dockHeader'], children: [_jsxs("button", { type: "button", className: css['dockTitle'], onClick: () => { setExpanded(value => !value); }, "aria-expanded": expanded, title: expanded ? t('collapse') : t('expand'), children: [_jsx("span", { children: t('dockLabel') }), _jsx("span", { className: paused ? css['badgeOff'] : css['badgeOn'], children: paused ? t('listeningOff') : t('listeningOn') }), _jsxs("span", { className: css['count'], children: [requests.length, " ", t('requests')] })] }), _jsxs("div", { className: css['dockButtons'], children: [_jsx("button", { type: "button", onClick: () => { run(actions.setPaused(sessionId, !paused)); }, children: paused ? t('start') : t('stop') }), _jsx("button", { type: "button", onClick: () => { run(actions.clearRequests(sessionId)); }, children: t('clear') }), _jsx("button", { type: "button", onClick: () => { run(actions.setDockVisible(sessionId, false)); }, children: t('dockHide') })] })] }), expanded
-                ? (_jsxs("div", { className: css['dockBody'], children: [error !== undefined ? _jsx("div", { className: css['error'], children: error }) : null, latest === undefined
+                ? (_jsxs("div", { className: css['dockBody'], children: [error !== undefined ? _jsx("div", { className: css['error'], children: error }) : null, requests.length === 0
                             ? _jsx("div", { className: css['hint'], children: t('emptyRequests') })
-                            : (_jsxs("div", { children: [_jsxs("div", { className: css['requestSummary'], children: ["#", latest.id, " ", requestSummary(latest)] }), _jsx(RequestBody, { request: latest, t: t })] }))] }))
+                            : (_jsx("div", { className: css['requestList'], children: requests.map(request => (_jsxs("details", { className: css['requestItem'], open: request === latest, children: [_jsxs("summary", { children: [_jsxs("span", { children: ["#", request.id] }), _jsxs("span", { children: [request.purpose.length > 0 ? `[${request.purpose}] ` : '', request.model || '?', " \u00B7 ", request.messages.length, " ", t('requestMessages')] }), _jsx("span", { children: new Date(request.time).toLocaleTimeString() })] }), _jsx(RequestBody, { request: request, t: t })] }, request.id))) }))] }))
                 : null] }));
 }
 //# sourceMappingURL=Dock.js.map
