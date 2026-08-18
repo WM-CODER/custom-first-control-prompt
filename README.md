@@ -39,7 +39,7 @@ The settings panel (config editor / dock / plugin toggle) is a **separate client
 | `history` | — | Ordered `user`/`assistant` reference exchanges seeded before the first turn; both texts must be non-empty and must not embed a reserved frame tag case-insensitively (`<user>`, `<assistant>`, `<exchange>`, `<custom-history`, or any closing tag), since an embedded tag would break the exchange structure the frame promises the model. Absent or empty seeds nothing. |
 | `includeSubagents` | `false` | `false` skips sessions whose header meta marks subagent origin. |
 | `historyMode` | `reapply` | Reference-history application mode; see Seeded History below. |
-| `seedMode` | `append` | Conversational-seed mechanism: `append` (default, route B — `agent/session-start` + `Session.append()`, **no framework hook/patch needed, works on npm 0.1.x**) or `hook` (route A, framework `agent-loop/session-seed` seed boundary; requires a hook-capable mainline build). See "Conversational seed mechanism (route B)". |
+| `seedMode` | `append` | Conversational-seed mechanism: `intercept` (route C — `llm/stream` clone-and-redispatch, **no framework hook/patch, no log writes; recommended on npm 0.1.x**), `append` (default, route B — `agent/session-start` + `Session.append()`; see the known turn-collision caveat below), or `hook` (route A, framework `agent-loop/session-seed` seed boundary; requires a hook-capable mainline build). See "Conversational seed mechanism (routes A/B/C)". |
 | `reapplyAfterCompaction` | — | Legacy alias: `true` maps to `historyMode: 'reapply'`, `false` maps to `'session-start'`; an explicit `historyMode` wins. |
 
 Misconfiguration fails plugin load with the offending entry named: unpaired roles, empty text, duplicate section names, or a non-finite order.
@@ -50,7 +50,25 @@ Each enabled entry registers through `ctx.systemPrompt.section()` at plugin load
 
 ## Seeded history
 
-At session creation the plugin contributes one balanced, fully closed turn per configured pair through the `agent-loop/session-seed` waterfall, so the model sees the reference history as **real alternating user/assistant messages**, not one framed transcript. `historyMode` then picks the **post-compaction fallback**:
+How the reference history reaches the model is chosen by `seedMode` (the conversational mechanism); `historyMode` then picks the **post-compaction fallback** for the log-based routes:
+
+### Conversational seed mechanism (routes A/B/C)
+
+| | `intercept` (route C) | `append` (route B, default) | `hook` (route A) |
+|---|---|---|---|
+| Injection point | `llm/stream` waterfall: clone the request, prepend the pairs, redispatch | `Session.append()` at `agent/session-start` | `agent-loop/session-seed` waterfall into the `sessions.prepare` boundary |
+| Framework requirement | none (npm 0.1.x works) | none (npm 0.1.x works) | hook-capable build (mainline / `patches/framework-planA*.patch`) |
+| Written to session log | **nothing** | balanced turns 1..N | balanced turns + `session/end-seed` |
+| Turn numbering | real turns start at 1 | **collides on unpatched frameworks** (see Known Limitations) | real turns start at N+1 |
+| Fork / resume | clean (no log state) | fork fails without the boundary relaxation | clean |
+| Compaction-immune | yes, by construction (injected per request) | no (seeds are ordinary surface content) | no |
+| Token cost | fixed 1 copy per request | fixed 1 copy while unshadowed | fixed 1 copy while unshadowed |
+| Visible in chat transcript | no (request path only) | yes | yes |
+| Model-visible reconstruction | session log **plus** deployment config (`cordis.patch.yml`); the log alone does not carry the pairs | from the session log alone | from the session log alone |
+
+Route C never mutates the frozen loop-built request (`markAgentLoopRequest(deepFreeze(...))`); it clones the options object with the prebuilt frozen seed messages prepended and redispatches through `ctx.llm.stream`, guarded against re-entry by request-object identity. The clone carries no loop marker, so the agent-loop log-reconstruction invariant does not apply to it, and the discarded original is a pure `deriveMessages()` projection. The framework has no registration surface for plugin-owned session event types (and `Session.append` cannot carry the `ignorable` envelope), so route C deliberately logs no declaration event: the injected content is a pure function of the deployment configuration and plugin version, and the panel's LLM listener captures the injected request at runtime.
+
+`historyMode` is ignored under `intercept` (there is no log state to reapply). Under `hook`, at session creation the plugin contributes one balanced, fully closed turn per configured pair through the `agent-loop/session-seed` waterfall, so the model sees the reference history as **real alternating user/assistant messages**, not one framed transcript. `historyMode` then picks the **post-compaction fallback**:
 
 | Mode | Creation seed | Post-compaction fallback | Token | Compaction-immune |
 |---|---|---|---|---|
@@ -111,6 +129,8 @@ All three modes keep the reference dialogue first in the message sequence and by
 
 ## Known Limitations and Deferred Work
 
+- **Route B (`append`) collides with the loop's turn numbering on unpatched frameworks** — the agent reads its last-turn watermark when the agent object is constructed, before `agent/session-start` fires, so an append-seeded session's first real turn reuses seeded turn number 1 and the surface fold lets the real assistant message shadow the seeded one (observed: "the real reply replaces the injected assistant message"). Additionally `Session.append()` never updates `header.seedLength`, so seed-boundary-aware consumers (the agent inbox slices events from `seedLength`) cannot distinguish seed turns from real ones. Prefer `intercept` on npm 0.1.x; route B stays available for comparison testing.
+- **Route C (`intercept`) hides the reference history from the chat transcript** — the pairs live only on the request path, so the conversation UI shows neither the seeded exchanges nor a frame row. Model-visible reconstruction reads the session log plus the deployment configuration: the log alone does not carry the injected pairs (the framework offers no registration surface for plugin-owned session event types, and `Session.append` cannot carry the `ignorable` envelope), which is a deliberate, documented deviation from the harness's log-reconstruction default.
 - **No mid-session mutation** — `reapply` and `per-request` apply configuration changes to the next request immediately; `session-start` applies them to new sessions only. A compliant idle-time edit would append surface-replacement events with cited source seqs and is deferred.
 - **Compaction may shadow the durable seed** — only with `historyMode: 'session-start'`: the seeded conversational turns are ordinary surface content; after compaction they can leave derived history while the system sections remain. `reapply` and `per-request` are immune and fall back to the framed transcript.
 - **`per-request` accumulates logged frames between compactions** — after the seed is shadowed, every request appends one framed `user/message`; earlier frames are absorbed by compaction, but within a compression interval requests carry multiple copies of the reference dialogue (token cost grows linearly with turns until compaction). For a fixed cost use `reapply` (the default).

@@ -148,6 +148,7 @@ export function PanelSection(props) {
                 const seedModeOptions = [
                     { value: 'hook', label: 'seedModeHook' },
                     { value: 'append', label: 'seedModeAppend' },
+                    { value: 'intercept', label: 'seedModeIntercept' },
                 ];
                 return (_jsxs("div", { children: [_jsx("div", { className: css['blockLabel'], children: "sections" }), config.sections.map((section, at) => (_jsxs("div", { className: css['editorRow'], children: [_jsxs("label", { className: css['field'], children: [_jsx("span", { children: t('sectionName') }), _jsx("input", { value: section.name, onChange: (event) => { setSection(at, { name: event.target.value }); } })] }), _jsxs("label", { className: css['field'], children: [_jsx("span", { children: t('sectionOrder') }), _jsx("input", { type: "number", value: section.order, onChange: (event) => {
                                                 const order = Number(event.target.value);

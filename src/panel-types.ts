@@ -37,7 +37,7 @@ export interface PanelConfigView {
   includeSubagents: boolean
   /** Reference-history application mode. */
   historyMode: string
-  /** Conversational-seed mechanism: 'hook' (route A, default) | 'append' (route B). */
+  /** Conversational-seed mechanism: 'hook' (route A) | 'append' (route B, default) | 'intercept' (route C). */
   seedMode: string
 }
 

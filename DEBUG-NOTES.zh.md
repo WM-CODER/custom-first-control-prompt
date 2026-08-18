@@ -15,6 +15,54 @@
 - 恢复顺序：屏蔽插件行（`<DSH_HOME>/profiles/web/cordis.patch.yml` 删除该 `insert` 或加
   `disabled: true`）→ `web-safe` 逃生 profile 重启 → 修产物后回归。
 
+## 0.1 Changelog 2026-08-18：C 路线（`seedMode: "intercept"`）落地 + B 路线根因定论
+
+**B 路线 bug 根因（实测定论）**：`Session.append()` 播种的会话里，用户发第一条真实消息后，
+真实 assistant 回复会**遮蔽**注入的 assistant 消息。机制链条：
+1. `ReactLoopAgent` 构造时（`agent-loop/src/agent.ts`）从日志读取最新 `turn/start` 作为
+   `lastTurn` 水位线——时机在 `agent/session-start` 触发**之前**，此时读到 0；
+2. `agent/session-start` 触发后 B 路线 append 种子 turn 1..N；
+3. 首个真实 turn = `lastTurn + 1` = 1，与种子 turn 1 **撞号**；
+4. surface 折叠按 turn 键去重，真实 assistant 消息覆盖同 turn 的种子消息。
+另：`Session.append()` 永不更新 `header.seedLength`（仅 `sessions.prepare({seed})` 边界写入），
+inbox 按 `events.slice(header.seedLength ?? 0)` 投影，无法区分种子与真实事件。
+结论：B 与 DSH Session 的 seed 边界机制**结构性不兼容**，npm 0.1.x 上请用 C 路线；
+B 保留仅作 A/B/C 对比测试。
+
+**C 路线机制**：`llm/stream` waterfall（`{ prepend: true }`）识别普通对话请求
+（`purpose === undefined && sessionId !== undefined`，subagent 按 `session.header.origin` 过滤），
+**克隆** options、前置一次构建冻结的交替种子消息（`buildSeedMessages`）、`ctx.llm.stream(cloned)`
+重新分发（WeakSet 按请求对象身份防递归）。三重封锁的规避论证：
+- 深冻结（`markAgentLoopRequest(deepFreeze(...))`）：从不 mutation 原对象，构造全新对象；
+- waterfall `next()` 无替换参数：放弃原调用链，经 `ctx.llm.stream()` 重启分发（waterfall 支持短路）；
+- agent-loop 不变式校验 `messages === deriveMessages()`：克隆体无 loop 标记，`isAgentLoopRequest`
+  直接放行。
+**不可行路径备忘**：adapter 包装不可行——`LlmRuntime.adapters` 为私有 Map，无公开 API
+获取已注册 adapter 实例供 delegate。
+
+**合规取舍（model-visible ⟺ logged）**：C 注入消息不落日志。曾计划写插件自有声明事件
+（`custom-first-control-prompt/injected` + `ignorable: true`），**框架现状物理不可行**：
+`Session.append()` 公共 API 不支持 ignorable 信封，且 `KNOWN_SESSION_EVENT_TYPES` 明确
+「下游插件事件的注册面推迟到有消费者时再做」——自定义事件类型写入日志会导致重启后 load
+被 `assertEventsSupported` 拒绝，会话不可用。定选：reconstruction = 会话日志 + 部署配置
+（cordis.patch.yml）+ 插件版本；面板「LLM 监听」可实时看到注入后的请求。
+
+**实机验证（rc.5 部署）**：会话日志仅含真实 turn 1/2、零种子消息、四个种子文本零泄漏；
+行为证据——问模型「重复我们最早的那条用户消息」，模型答出配置的 `用户测试提示词1`
+（日志里最早的真实用户消息是乱码占位，模型不可能从日志得知），注入到达模型实锤；
+fork 正常；web stderr 无 invariant 失败。
+
+**类型 shim**：`src/index.ts` 本地声明 `agent-loop/session-seed` 事件（镜像补丁框架签名）——
+未打补丁的框架（含本仓库主线）的 Events 无此成员，hook 分支否则无法通过类型检查；
+框架日后合并钩子时应删除该 shim（相同签名合并为无害重复 overload）。
+
+**测试约定**：`tests/plan-a.spec.ts` 的 3 个 hook 依赖用例标了 `it.skip`
+（需打补丁框架，本仓库主线无钩子）；路线 B/C 用例全活。新增 `tests/intercept.spec.ts`
+（buildSeedMessages 单测）与 `tests/intercept-e2e.spec.ts`（装配：注入形态/log 干净/
+每请求一致/purpose 与 hand-built 过滤/subagent 过滤/fork 回归）。
+
+
+
 ## 1. Web 拉起阻碍（fail-loud 的各类根因）
 
 ### 1.1 裸装饰器语法（Node 解析失败）

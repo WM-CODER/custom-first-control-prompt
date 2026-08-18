@@ -428,7 +428,9 @@ describe('seed helpers', () => {
 describe('loader export path', () => {
   it('exposes the cordis plugin contract a loader consumes', () => {
     expect(CustomFirstControlPrompt.name).toBe('custom-first-control-prompt')
-    expect(CustomFirstControlPrompt.inject).toEqual(['agents', 'systemPrompt'])
+    // 'llm' redispatches the cloned request and 'sessions' resolves subagent
+    // origins for the intercept (route C) seed mode.
+    expect(CustomFirstControlPrompt.inject).toEqual(['agents', 'systemPrompt', 'llm', 'sessions'])
     expect(typeof CustomFirstControlPrompt.apply).toBe('function')
     expect(CustomFirstControlPrompt.Config).toBeTypeOf('function')
     // No default export: Loader.unwrapExports collapses onto exports.default when

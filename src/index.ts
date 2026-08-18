@@ -9,24 +9,68 @@
  */
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import type { SessionEvent, SessionId } from '@deepseek-ai/dsh-session'
+import type { GenerateOptions } from '@deepseek-ai/dsh-llm'
 import type {} from '@deepseek-ai/dsh-agent'
 import type {} from '@deepseek-ai/dsh-agent-loop'
 import type {} from '@deepseek-ai/dsh-system-prompt'
 import type { HistoryPair } from './seed.ts'
-import { appendSeedTurns, buildHistoryMessage, buildSeedEvents, hasSeededHistory, isSeededByPlugin, seededMessageSource, seedTranscript, TRANSCRIPT_RESERVED_TAGS } from './seed.ts'
+import { appendSeedTurns, buildHistoryMessage, buildSeedEvents, buildSeedMessages, hasSeededHistory, isSeededByPlugin, seededMessageSource, seedTranscript, TRANSCRIPT_RESERVED_TAGS } from './seed.ts'
 import { PanelService } from './panel.ts'
 
 /** Cordis plugin name, also the plugin attribution on the seeded message. */
 export const name = 'custom-first-control-prompt'
 
-/** Required services: the agent registry for session lifecycle events and the system-prompt registry for sections. */
-export const inject = ['agents', 'systemPrompt']
+/**
+ * Required services: the agent registry for session lifecycle events, the
+ * system-prompt registry for sections, plus `llm` (request redispatch) and
+ * `sessions` (subagent-origin filtering) for the `intercept` seed mode.
+ */
+export const inject = ['agents', 'systemPrompt', 'llm', 'sessions']
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
     /** Web panel management service: patch editing, request capture, previews. */
     'custom-first-control-prompt-panel': PanelService
+  }
+}
+
+// The `agent-loop/session-seed` waterfall exists only on hook-capable
+// framework builds (patches/framework-planA*.patch); stock 0.1.x frameworks
+// declare no such event. This local declaration lets the hook branch
+// typecheck against either build: where the framework also declares it, the
+// identical signature merges as a harmless duplicate overload. Delete this
+// shim once the framework merges the hook upstream.
+declare module '@deepseek-ai/cordis' {
+  interface Events {
+    /**
+     * Contribute durable seed events before a session is prepared. Listeners
+     * receive the identity and creation metadata of the session about to be
+     * created and the seed accumulated so far; call `next()` to reach
+     * downstream contributions plus the caller-supplied seed, then return the
+     * complete seed list. Contributed events must form balanced, fully closed
+     * turns contiguously numbered from the accumulated seed.
+     * @param payload.sessionId - identity of the session being created.
+     * @param payload.meta - creation metadata; mirrors `CreateAgentOptions.meta`
+     *   (cwd, fork lineage, origin, delegation budget, preset).
+     * @param next - downstream contributions plus the caller-supplied seed.
+     * @returns the complete seed event list the factory passes to the session boundary.
+     * @mode waterfall
+     */
+    'agent-loop/session-seed'(
+      payload: {
+        sessionId: SessionId
+        meta: Readonly<{
+          cwd?: string
+          parentSession?: SessionId
+          seedLength?: number
+          origin?: 'subagent'
+          delegationDepth?: number
+          agentPreset?: string
+        }> | undefined
+      },
+      next: () => Promise<readonly SessionEvent[]>,
+    ): Promise<readonly SessionEvent[]>
   }
 }
 
@@ -66,12 +110,29 @@ export type HistoryMode = 'session-start' | 'reapply' | 'per-request'
  *   apply. Known limitation: forking a session that carries an append-seeded
  *   conversation fails on frameworks without the seed-boundary relaxation
  *   (the fork prefix re-enters the seed boundary, which rejects plugin-source
- *   assistant messages).
+ *   assistant messages). Route B also collides with the loop's turn numbering
+ *   on unpatched frameworks: the agent reads its last-turn watermark before
+ *   `agent/session-start` fires, so the first real turn reuses a seeded turn
+ *   number and the surface fold lets the real assistant message shadow the
+ *   seeded one — prefer `intercept` on npm builds.
  * - `hook` (route A): the `agent-loop/session-seed` waterfall at session
  *   creation, seeded through the `sessions.prepare` boundary — requires the
  *   framework hook (mainline builds only) and keeps seed-boundary forking.
+ * - `intercept` (route C): the `llm/stream` waterfall clones every ordinary
+ *   conversation request and redispatches it with the reference exchanges
+ *   prepended as real alternating user/assistant messages. Nothing is written
+ *   to the session log, so there is no turn conflict, no seed-boundary or
+ *   fork restriction, and compaction immunity by construction. Works on any
+ *   0.1.x framework without a patch. Trade-offs: the reference history is
+ *   invisible in the chat transcript (it lives only on the request path),
+ *   each request carries one fixed copy (same cost as one seed, but on every
+ *   request), and model-visible reconstruction reads the session log plus the
+ *   deployment configuration (`cordis.patch.yml`) — the log alone does not
+ *   carry the injected pairs, because this framework has no registration
+ *   surface for plugin-owned session event types. `historyMode` is ignored
+ *   (no log state exists to reapply).
  */
-export type SeedMode = 'hook' | 'append'
+export type SeedMode = 'hook' | 'append' | 'intercept'
 
 /** Plugin configuration; see README for the full contract. */
 export interface Config {
@@ -87,9 +148,10 @@ export interface Config {
    */
   historyMode?: HistoryMode
   /**
-   * Conversational-seed mechanism: `append` (default, route B — no framework
-   * hook/patch) or `hook` (route A, framework `agent-loop/session-seed` seed
-   * boundary; see {@link SeedMode}).
+   * Conversational-seed mechanism: `append` (default, route B), `hook`
+   * (route A, framework `agent-loop/session-seed` seed boundary), or
+   * `intercept` (route C, request-level injection through `llm/stream`;
+   * recommended on npm 0.1.x). See {@link SeedMode}.
    */
   seedMode?: SeedMode
   /**
@@ -113,7 +175,7 @@ export const Config: z<Config> = z.object({
   })),
   includeSubagents: z.boolean().default(false),
   historyMode: z.union(['session-start', 'reapply', 'per-request']),
-  seedMode: z.union(['hook', 'append']),
+  seedMode: z.union(['hook', 'append', 'intercept']),
   reapplyAfterCompaction: z.boolean(),
 })
 
@@ -243,6 +305,43 @@ export function apply(ctx: Context, config: Config): void {
   // framework hook or patch, so the conversational tier works on npm 0.1.x out
   // of the box; an explicit 'hook' opts back into the framework seed boundary.
   const seedMode: SeedMode = config.seedMode ?? 'append'
+  // Route C (intercept): clone-and-redispatch at the llm/stream waterfall.
+  // Loop-built requests are deep-frozen and marker-tagged
+  // (`markAgentLoopRequest`), and the agent-loop invariant fails any marked
+  // request whose messages differ from `deriveMessages()` — so the original
+  // request object is never mutated. Instead the listener clones it with the
+  // reference exchanges prepended and redispatches through `ctx.llm.stream`:
+  // the clone carries no loop marker, the invariant does not apply to it, and
+  // the discarded original is a pure `deriveMessages()` projection (nothing
+  // unrecoverable is dropped). Fully isolated from the append/hook branches:
+  // this branch returns before any session-start, session-seed, or pre-step
+  // listener is registered, so toggling modes never double-injects, and
+  // `historyMode` is intentionally ignored (no log state exists to reapply).
+  if (seedMode === 'intercept') {
+    const seedMessages = buildSeedMessages(pairs)
+    // Reentry guard: the redispatched clone re-enters this waterfall; the
+    // WeakSet marks it so it passes straight through instead of being
+    // intercepted recursively. Keyed by request object identity — no teardown
+    // bookkeeping, and entries vanish with the request.
+    const reentry = new WeakSet<GenerateOptions>()
+    ctx.on('llm/stream', (options, next) => {
+      if (reentry.has(options)) {
+        reentry.delete(options)
+        return next()
+      }
+      // Ordinary conversation requests only: auxiliary calls (compaction,
+      // session-title) carry `purpose`; hand-built calls carry no `sessionId`.
+      if (options.purpose !== undefined) return next()
+      const sessionId = options.sessionId
+      if (sessionId === undefined) return next()
+      if (config.includeSubagents !== true
+        && ctx.sessions.get(sessionId)?.header.origin === 'subagent') return next()
+      const cloned: GenerateOptions = { ...options, messages: [...seedMessages, ...options.messages] }
+      reentry.add(cloned)
+      return ctx.llm.stream(cloned)
+    }, { prepend: true })
+    return
+  }
   if (seedMode === 'append') {
     ctx.on('agent/session-start', ({ agent }) => {
       if (config.includeSubagents !== true && agent.session.header.origin === 'subagent') return

@@ -37,26 +37,43 @@
 | `history` | — | 在首个 turn 之前注入的有序 `user`/`assistant` 参考对话；两者文本都必须非空，且不得包含框架保留标签（大小写不敏感：`<user>`、`<assistant>`、`<exchange>`、`<custom-history` 及所有闭合标签），因为内嵌标签会破坏框架向模型承诺的对话结构。缺省或为空时不注入。 |
 | `includeSubagents` | `false` | `false` 时跳过 header meta 标记为 subagent 来源的会话。 |
 | `historyMode` | `reapply` | 参考对话的应用模式，见下方「预置历史」。 |
-| `seedMode` | `append` | 对话式种子的注入机制：`append`（B 路线，默认，`agent/session-start` + `Session.append()`，**不依赖框架钩子/补丁，npm 0.1.x 部署可用**）或 `hook`（A 路线，框架 `agent-loop/session-seed` 种子边界，需含钩子的主线构建）。见「对话式种子机制（B 路线）」。 |
+| `seedMode` | `append` | 对话式种子的注入机制：`intercept`（C 路线，`llm/stream` 克隆重分发，**不依赖框架钩子/补丁、日志零写入，npm 0.1.x 推荐**）、`append`（B 路线，默认，`agent/session-start` + `Session.append()`；注意下方已知的 turn 撞号缺陷）或 `hook`（A 路线，框架 `agent-loop/session-seed` 种子边界，需含钩子的主线构建）。见「对话式种子机制（A/B/C 路线）」。 |
 | `reapplyAfterCompaction` | — | 兼容别名：`true` 映射为 `historyMode: 'reapply'`，`false` 映射为 `'session-start'`；显式 `historyMode` 优先。 |
 
 配置错误会使插件加载失败并指明出错条目：角色不成对、文本为空、section 重名或 order 非有限数。
 
-## 对话式种子机制（B 路线，默认）
+## 对话式种子机制（A/B/C 路线）
 
-参考历史默认走 **B 路线（`seedMode: "append"`）**：插件在 `agent/session-start` 用 `Session.append()` 把每对参考历史写成**真实闭合的交替 user/assistant 消息**，**不依赖框架钩子/补丁**——npm 0.1.x 发布物（含 rc.6，实测无 `agent-loop/session-seed` 钩子）也能拿到对话式完全版；本模式只做会话开头这一次注入（不注册钩子监听、不做 pre-step 帧回退，`historyMode` 在 append 下被忽略）。
+| | `intercept`（C 路线） | `append`（B 路线，默认） | `hook`（A 路线） |
+|---|---|---|---|
+| 注入点 | `llm/stream` waterfall：克隆请求、前置种子、重新分发 | `agent/session-start` 时 `Session.append()` | `agent-loop/session-seed` waterfall 进 `sessions.prepare` 种子边界 |
+| 框架要求 | 无（npm 0.1.x 即可） | 无（npm 0.1.x 即可） | 含钩子的构建（主线 / `patches/framework-planA*.patch`） |
+| 写入会话日志 | **无** | 闭合 turn 1..N | 闭合 turn + `session/end-seed` 标记 |
+| turn 编号 | 真实 turn 从 1 开始，无冲突 | **未打补丁框架上撞号**（见已知限制） | 真实 turn 从 N+1 开始 |
+| fork / resume | 正常（无日志状态） | 无边界放宽的框架上 fork 失败 | 正常 |
+| 压缩免疫 | 是，机制保证（每请求注入） | 否（种子是普通 surface 内容） | 否 |
+| Token 成本 | 每请求固定 1 份 | 未被遮蔽时固定 1 份 | 未被遮蔽时固定 1 份 |
+| 聊天界面可见 | 否（仅请求路径） | 是 | 是 |
+| 模型可见内容重建 | 会话日志 **+** 部署配置（`cordis.patch.yml`）；日志本身不含种子对 | 仅从会话日志即可 | 仅从会话日志即可 |
 
-需要走 **A 路线（`seedMode: "hook"`）**（框架 `agent-loop/session-seed` 种子边界，需含钩子的主线构建，fork 兼容）时显式设 `hook`。
+**C 路线（`seedMode: "intercept"`，npm 0.1.x 推荐）**：在 `llm/stream` waterfall 把普通对话请求克隆一份、把预构建的交替 user/assistant 种子消息前置后重新分发，不写会话日志。原请求是深冻结且带 loop 标记的（`markAgentLoopRequest(deepFreeze(...))`），从不被修改；克隆体无 loop 标记，agent-loop 的日志重建不变式不适用于它，被丢弃的原请求只是 `deriveMessages()` 的纯投影。因框架没有插件自有会话事件类型的注册面（且 `Session.append` 无法携带 `ignorable` 信封），C 路线**有意不落任何声明事件**：注入内容是部署配置的纯函数，运行时可通过面板「LLM 监听」直接看到注入后的请求。`historyMode` 在 intercept 下被忽略（无日志状态可回退）。
 
-**面板启用/选择**：设置 → 「自定义优先控制提示词」→ 配置 tab → 「对话式种子机制」下拉选 **Append (route B)** 或 **Hook (route A)** 并保存。首次打开若显示与配置不符，说明客户端缓存了旧资源——**硬刷新**（Ctrl+Shift+R）后即正确。
+**B 路线（`seedMode: "append"`）**：插件在 `agent/session-start` 用 `Session.append()` 把每对参考历史写成**真实闭合的交替 user/assistant 消息**，不依赖框架钩子/补丁；只做会话开头这一次注入（不注册钩子监听、不做 pre-step 帧回退，`historyMode` 在 append 下被忽略）。
 
-**验证是否有 B 在生效**：新建会话，调 `session.history`——种子轮次应排在 `permission/preset` 等系统事件**之后**，且整个日志**没有 `session/end-seed`**（A 路线有该边界标记）。
+**A 路线（`seedMode: "hook"`）**：框架 `agent-loop/session-seed` 种子边界，需含钩子的主线构建，fork 兼容。
+
+**面板启用/选择**：设置 → 「自定义优先控制提示词」→ 配置 tab → 「对话式种子机制」下拉选 **Intercept (route C)** / **Append (route B)** / **Hook (route A)** 并保存。首次打开若显示与配置不符，说明客户端缓存了旧资源——**硬刷新**（Ctrl+Shift+R）后即正确。
+
+**验证 C 在生效**：新建会话并提问一个只有注入历史才能回答的问题（如「重复我们最早的那条用户消息」），模型答出配置内容即生效；`session.history` 里**看不到**种子消息（日志干净是特性而非故障），面板的「LLM 监听」可看到注入后的真实请求。
+
+**验证 B 在生效**：新建会话，调 `session.history`——种子轮次应排在 `permission/preset` 等系统事件**之后**，且整个日志**没有 `session/end-seed`**（A 路线有该边界标记）。
 
 **面板保存不丢其它行**：面板「配置编辑」保存只更新本插件核心行（`custom-first-control-prompt`）的配置，**保留 `cordis.patch.yml` 里其它所有内容**——包括手动写入的面板客户端行（`- id: ui-custom-first-control-prompt`）、其它条目与注释。旧版本会整文件覆盖并抹掉手动面板行（UI 失联），已修复。
 
 **已知限制**：
-- **fork 含种子会话会失败**（无 seed 边界放宽的框架）：fork 会把父日志前缀作为子会话 seed 传入 `sessions.prepare`，被边界校验拒绝。需要 fork 请用 A 路线（打框架补丁或等含钩子/放宽的主线构建）。
-- **turn 编号重复**：B 的种子在 `session-start` 才 append，真实首轮从 `turn:1` 独立开始，日志里种子 `turn:1/2` 与真实 `turn:1/2` 撞号；不影响模型消息顺序，但前端按「轮次」分组/统计会出现两个「轮次 1」。
+- **B 路线 turn 撞号并遮蔽种子回复**（无 seed 边界放宽/钩子的框架）：agent 在构造时读取最新 turn 水位线，早于 `agent/session-start` 触发，因此 append 播种的会话里真实首个 turn 复用种子的 `turn:1`，surface 折叠让真实 assistant 消息**遮蔽**种子 assistant 消息（实测：真实回复「干掉」注入回复）；且 `Session.append()` 不更新 `header.seedLength`，inbox 等按 seedLength 切片的消费者无法区分种子与真实事件。**npm 0.1.x 请改用 C 路线**；B 保留用于对比测试。
+- **B 路线 fork 含种子会话会失败**（无 seed 边界放宽的框架）：fork 会把父日志前缀作为子会话 seed 传入 `sessions.prepare`，被边界校验拒绝。
+- **C 路线聊天界面看不到参考历史**：种子只存在于请求路径，会话 UI 既不显示交替消息也不显示框架行；模型可见内容的重建需要会话日志 + 部署配置（框架没有插件事件类型注册面，`Session.append` 也无法携带 `ignorable` 信封），这是对 harness 日志重建默认原则的有意偏离，已在此声明。
 
 ## 系统段
 

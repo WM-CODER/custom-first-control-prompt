@@ -180,8 +180,11 @@ export class PanelService extends TypertRemoteService {
     const mode = config?.historyMode === 'per-request' || config?.historyMode === 'session-start'
       ? config.historyMode
       : 'reapply'
-    // Route B (append) is the default mechanism; only an explicit 'hook' opts back.
-    const seedMode = config?.seedMode === 'hook' ? 'hook' : 'append'
+    // Route B (append) is the default mechanism; explicit 'hook' (route A) or
+    // 'intercept' (route C) opts into that mechanism instead.
+    const seedMode = config?.seedMode === 'hook' || config?.seedMode === 'intercept'
+      ? config.seedMode
+      : 'append'
     const secBlock = sections.length > 0
       ? sections.map(s => `          - name: ${PanelService.yamlScalar(s.name)}\n            order: ${Number(s.order) || 0}\n            text: ${PanelService.yamlScalar(s.text)}`).join('\n')
       : ''

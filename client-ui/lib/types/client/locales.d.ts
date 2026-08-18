@@ -44,6 +44,7 @@ export declare const en: {
     readonly seedMode: "Conversational-seed mechanism";
     readonly seedModeHook: "Hook (route A, framework seed boundary)";
     readonly seedModeAppend: "Append (route B, session-start only, no framework patch)";
+    readonly seedModeIntercept: "Intercept (route C, per-request injection, no log writes)";
     readonly requestModel: "Model";
     readonly requestProvider: "Provider";
     readonly requestTime: "Time";

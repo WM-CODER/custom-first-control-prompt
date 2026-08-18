@@ -9,11 +9,14 @@
 #    主线构建的 web-app，见 profile-web.patch.yml 的形态）时，删掉下方的面板行，
 #    避免同 id 重复 insert -> web fail-loud 起不来。
 # 2. 核心插件行本身也只出现一次：若 bundle 已自带（少见），删掉这里对应的条目。
-# 3. historyMode 示例用 'session-start'（对话式种子：首条真实消息前即成对显示，
-#    无 <custom-history> 框架文本）；reapply/per-request 为压缩遮蔽回退用框架，
-#    语义差异见 README.zh.md「预置历史」。注意：对话式种子需要框架含
-#    agent-loop/session-seed 钩子（仅主线构建有；npm 0.1.x 发布物无钩子，需打
-#    patches/framework-planA-rc5.patch 或走基础档帧路径，见 INSTALL.md「两档功能」）。
+# 3. seedMode 三路线：'intercept'（C 路线，推荐——llm/stream 克隆重分发，
+#    每请求注入真实交替种子消息，日志零写入，npm 0.1.x 免补丁，fork 安全，
+#    压缩免疫；聊天界面看不到种子，面板「LLM 监听」可见注入后请求）；
+#    'append'（B 路线，默认——会话开头 Session.append 落种子，注意已知缺陷：
+#    未打补丁框架上真实首 turn 与种子 turn 1 撞号、真实回复遮蔽注入回复）；
+#    'hook'（A 路线——需含 agent-loop/session-seed 钩子的主线构建或
+#    patches/framework-planA-rc5.patch）。historyMode 在 intercept/append 下均被忽略，
+#    仅 hook 路线的压缩回退用；语义矩阵见 README.zh.md「对话式种子机制（A/B/C 路线）」。
 # 4. 示例文本用中性测试内容（用户测试提示词1/助手提示词1 这种），不要用
 #    「每条回复必须以句号结尾」之类的自指规则——规则性样例会让模型在验证时
 #    陷入规则复读甚至死循环。
@@ -31,7 +34,7 @@
           - user: "用户测试提示词2"
             assistant: "助手提示词2"
         includeSubagents: false
-        historyMode: "session-start"
+        seedMode: "intercept"
 
     # Panel surface (client-ui/). npm 0.1.x bundle 不带此行，必须写在 profile；
     # 仅当 bundle 确认自带时才删除本行（同 id 重复会让 web 起不来）。

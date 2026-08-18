@@ -181,6 +181,7 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
         const seedModeOptions: readonly { value: string; label: CfcpKey }[] = [
           { value: 'hook', label: 'seedModeHook' },
           { value: 'append', label: 'seedModeAppend' },
+          { value: 'intercept', label: 'seedModeIntercept' },
         ]
         return (
           <div>

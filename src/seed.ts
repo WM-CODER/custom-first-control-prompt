@@ -3,7 +3,7 @@
  * frame renderer, the one-shot session-log append, and the durable-log scan
  * that keeps resume and fork idempotent.
  */
-import { createUserMessage, MessageId, type UserMessage } from '@deepseek-ai/dsh-llm'
+import { createUserMessage, deepFreeze, MessageId, type Message, type UserMessage } from '@deepseek-ai/dsh-llm'
 import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
 
 /** Plugin attribution carried by the seeded message's `source`. */
@@ -241,4 +241,35 @@ export function appendSeedTurns(session: Session, pairs: readonly HistoryPair[])
     session.append('step/end', { turn, step })
     session.append('turn/end', { turn, reason: { kind: 'completed' } })
   })
+}
+
+/**
+ * Build the request-level seed messages for `seedMode: 'intercept'` (route C):
+ * one real alternating user/assistant exchange per configured pair, as plain
+ * `Message` objects for `GenerateOptions.messages`. Built once per plugin
+ * activation and shared by every intercepted request, keeping the injected
+ * prefix byte-identical for prefix-cache reuse. These messages never enter
+ * the session log — they exist only on the request path, so there is no turn
+ * structure to conflict with the loop's turn numbering and nothing for
+ * compaction to shadow. The user side carries `kind:'user'` and the assistant
+ * side plugin attribution, matching {@link buildSeedEvents} so every consumer
+ * that recognises the seed keeps recognising it.
+ * @param pairs - ordered reference exchanges.
+ * @returns the frozen alternating user/assistant message sequence.
+ */
+export function buildSeedMessages(pairs: readonly HistoryPair[]): readonly Message[] {
+  const messages: Message[] = []
+  for (const [index, pair] of pairs.entries()) {
+    messages.push(createUserMessage({
+      content: [{ type: 'text', text: pair.user }],
+      source: { kind: 'user' },
+    }))
+    messages.push({
+      id: MessageId(`${SEED_SOURCE}-intercept-${index}`),
+      role: 'assistant',
+      source: { kind: 'plugin', plugin: SEED_SOURCE },
+      content: [{ type: 'text', text: pair.assistant }],
+    })
+  }
+  return deepFreeze(messages)
 }
