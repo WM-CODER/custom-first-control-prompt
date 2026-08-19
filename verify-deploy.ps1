@@ -64,15 +64,24 @@ if ($code -eq 0 -and $resolve -match 'hasConfig=true') {
   Check "plugin resolvable with Config schema" $false $resolve.Trim() "junction present? plugin lib intact?"
 }
 
-# 2. composition rows
+# 2. composition rows + install mode
 $dump = ''
 if (Test-Path "$modulesDir\@deepseek-ai\dsh\lib\bin.js") {
   Push-Location $profileDir
   $dump = node "$modulesDir\@deepseek-ai\dsh\lib\bin.js" --profile $ProfileName --dump-config 2>&1 | Out-String
   Pop-Location
 }
-Check "composition has core row" ($dump -match '(?m)- id: custom-first-control-prompt') "" "core plugin row missing from bundle/profile"
-Check "composition has panel row" ($dump -match '(?m)- id: ui-custom-first-control-prompt') "" "npm 0.1.x needs the panel row in profile patch"
+Check "composition has core row" ($dump -match '(?m)- id: custom-first-control-prompt') "" "core row missing: dsh plugin add activates the bundle layer; offline installs need the profile rows (install.ps1)"
+Check "composition has panel row" ($dump -match '(?m)- id: ui-custom-first-control-prompt') "" "panel row missing: same layer as the core row (bundle patch or offline profile rows)"
+$profilePkg = Join-Path $profileDir 'package.json'
+if (Test-Path $profilePkg) {
+  $managed = (Get-Content $profilePkg -Raw) -match '@wm-coder/dsh-custom-first-control-prompt'
+  if ($managed) {
+    Write-Host "         install mode: official (dsh plugin add, bundle layer active)"
+  } else {
+    Write-Host "         install mode: junction/manual (legacy; consider dsh plugin add)"
+  }
+}
 
 # 3. boot manifest + panel bundle
 try {

@@ -1,36 +1,30 @@
-# Your patch layer for this dsh profile, applied after every bundle layer:
-# a top-level YAML array of loader patch entries (id-targeted config
-# overrides, disables, and insert lists; `!!js` expressions allowed).
+# 用户层覆盖样例（profile cordis.patch.yml）
 #
-# 关键约束（照抄会踩的坑）：
-# 1. profile patch 默认写「核心插件行 + 面板行」两行——npm 0.1.x 发布物
-#    （含 rc.6）的 web bundle 实测**不带**面板行（ui-custom-first-control-prompt），
-#    面板行必须写在 profile。**仅当**部署 bundle 确认已自带面板行时，删掉下方的
-#    面板行，避免同 id 重复 insert -> web fail-loud 起不来。
-# 2. 核心插件行本身也只出现一次：若 bundle 已自带（少见），删掉这里对应的条目。
-# 3. 注入机制：history 参考对话走请求路径拦截（llm/stream 克隆重分发），
-#    每个普通对话请求前置真实交替的 user/assistant 种子消息；会话日志零写入
-#    （真实轮次编号不受影响、fork 干净、压缩不可遮蔽）。种子消息在聊天
-#    transcript 中不可见是预期行为，用面板「LLM 监听」验证注入。
-# 4. 示例文本用中性测试内容（用户测试提示词1/助手提示词1 这种），不要用
-#    「每条回复必须以句号结尾」之类的自指规则——规则性样例会让模型在验证时
-#    陷入规则复读甚至死循环。
-- insert:
-    - id: custom-first-control-prompt
-      name: '@wm-coder/dsh-custom-first-control-prompt'
-      config:
-        sections:
-          - name: "system"
-            order: -50
-            text: "这是测试提示词"
-        history:
-          - user: "用户测试提示词1"
-            assistant: "助手提示词1"
-          - user: "用户测试提示词2"
-            assistant: "助手提示词2"
-        includeSubagents: false
-
-    # Panel surface (client-ui/). npm 0.1.x bundle 不带此行，必须写在 profile；
-    # 仅当 bundle 确认自带时才删除本行（同 id 重复会让 web 起不来）。
-    - id: ui-custom-first-control-prompt
-      name: '@wm-coder/dsh-client-ui-custom-first-control-prompt'
+# 本插件经 `dsh plugin add` 安装后，其 bundle 层（包内 cordis.patch.yml）已插入
+# 核心行与面板行（含中性示例默认配置）。自定义配置**不要**复制 `- insert:` 行——
+# 根列表同 id 重复会让整个 web 组合 fail-loud 起不来。正确姿势是写
+# **带 id 的定向 patch**（非 insert），按 key 覆盖 bundle 行的 config（后写胜出）：
+#
+# 1. 把下面这段追加到 <DSH_HOME>/profiles/web/cordis.patch.yml（顶层 YAML 数组，
+#    文件为空/纯注释时保留注释头整体写入，已有条目则追加到数组末尾）；
+# 2. 改成你自己的 sections / history 内容；
+# 3. 保存后 web 热监听几秒内自动重载，无需重启。
+#
+# 临时停用本插件（保留安装）：把 config 换成 `disabled: true` 即可；
+# 彻底卸载用 `dsh plugin --profile web remove`（见 INSTALL.md）。
+#
+# 提示：示例文本用中性测试内容（用户测试提示词1/助手提示词1 这种），不要用
+# 「每条回复必须以句号结尾」之类的自指规则——规则性样例会让模型陷入规则复读。
+# 面板「配置编辑」保存生成的正是这种定向覆盖，与本样例等价。
+- id: custom-first-control-prompt
+  config:
+    sections:
+      - name: "system"
+        order: -50
+        text: "这是测试提示词"
+    history:
+      - user: "用户测试提示词1"
+        assistant: "助手提示词1"
+      - user: "用户测试提示词2"
+        assistant: "助手提示词2"
+    includeSubagents: false

@@ -173,7 +173,19 @@ function partitionPairs(pairs: readonly HistoryPair[]): { clean: HistoryPair[]; 
 export function apply(ctx: Context, config: Config): void {
   // The web panel service stays available even with no configured content:
   // it manages the patch entry and captures requests for the browser half.
-  new PanelService(ctx)
+  // The composed-config snapshot lets the panel show the bundle-layer defaults
+  // while the profile patch still carries no row.
+  new PanelService(ctx, {
+    found: false,
+    sections: (config.sections ?? []).map(section => ({
+      name: section.name,
+      order: section.order,
+      text: section.text,
+      enabled: section.enabled !== false,
+    })),
+    history: (config.history ?? []).map(pair => ({ user: pair.user, assistant: pair.assistant })),
+    includeSubagents: config.includeSubagents === true,
+  })
   const sections = config.sections ?? []
   const { clean: mountableSections, problems: sectionProblems } = partitionSections(sections)
   for (const problem of sectionProblems) ctx.logger.warn('skipping a configured section: %s', problem)

@@ -49,7 +49,7 @@
 
 **验证注入生效**：新建会话并提问一个只有注入历史才能回答的问题（如「重复我们最早的那条用户消息」），模型答出配置内容即生效；`session.history` 里看不到种子消息（日志干净是特性而非故障）。
 
-**面板保存不丢其它行**：面板「配置编辑」保存只更新本插件核心行（`custom-first-control-prompt`）的配置，**保留 `cordis.patch.yml` 里其它所有内容**——包括手动写入的面板客户端行（`- id: ui-custom-first-control-prompt`）、其它条目与注释。
+**面板保存的语义**：面板「配置编辑」保存向 profile `cordis.patch.yml` 写入**带 id 的定向覆盖**（非 insert，绝不与 bundle 层的行撞 id），只更新本插件核心行（`custom-first-control-prompt`）的配置，**保留文件里其它所有内容**——其它条目、注释、以及旧安装遗留的行。profile 无本插件行时，编辑器显示当前生效的组合配置（bundle 层默认值），保存即生成覆盖。
 
 ## 系统段
 
@@ -99,16 +99,19 @@
 - **种子文本是模型可见的参考材料** — 部署方应将其视为模型读取的提示词文本，而非可信通道。
 - **不支持会话中段修改** — 配置变更在 web 重启后对新请求生效；合规的"静止时编辑"应追加带 source seq 引用的 surface 替换事件，已延后。
 
-## FAQ：面板 UI 为什么需要配置 `ui-custom-first-control-prompt` 行？
+## FAQ：面板 UI 与插件行是怎么进入组合的？
 
-设置页的面板（配置编辑 / dock / 插件开关）是一个**独立的客户端 loader 行** `ui-custom-first-control-prompt`，浏览器只有在 web 组合里包含它时才会加载面板 bundle 并显示 UI。它有两个来源：
+核心包声明了 `dsh.bundle`（包内 `cordis.patch.yml`），`dsh plugin add` 的对账会把这个
+bundle 层激活进组合——**核心行 `custom-first-control-prompt`（服务端逻辑：系统段、
+参考历史注入）与面板行 `ui-custom-first-control-prompt`（浏览器 UI：设置页、dock、
+LLM 监听）一起出现**，无需手写任何 patch 行。卸载 `dsh plugin remove` 会把依赖与
+bundle 层一起移除。
 
-1. **web bundle 自带**：`@deepseek-ai/dsh-web-app` 的 `cordis.patch.yml` 若已含 `- id: ui-custom-first-control-prompt` → 开箱即有 UI；
-2. **profile 手写**：bundle **不带**该行 → 必须在 `<DSH_HOME>/profiles/web/cordis.patch.yml` 补写，浏览器才会加载面板。
-
-- **本机开发部署**用本地构建的 web app（bundle patch 已恢复该行）→ 不用在 profile 写、UI 自动出现；
-- **npm 部署**（rc.6 等）：实测 `dsh-web-app` 的 `cordis.patch.yml` **不含**该行 → **必须**在 profile 补写这行才能看到 UI。
-
-核心行 `custom-first-control-prompt` 管**服务端逻辑**（系统段、参考历史注入）；面板行管**浏览器 UI**。只装核心不补面板行 = **功能在、UI 不显示**（面板是可选外壳）。
-
-> 注意重复 id：若 bundle 已自带该行，profile 再写一次 = **同 id 重复 insert → web 起不来**；判定方法见 [INSTALL.md](INSTALL.md) §0「bundle 是否自带面板行」。
+- **自定义配置**：不要复制 `- insert:` 行。在 profile 的 `cordis.patch.yml` 写
+  **带 id 的定向 patch**（非 insert）覆盖 bundle 行的 config（后写胜出），样例见
+  `cordis.patch.yml.template`；面板「配置编辑」保存生成的正是这种覆盖。
+- **离线 junction 安装**没有经过对账，bundle 层不会激活——`install.ps1 -Offline`
+  会把同样的两行写进 profile patch 代替。
+- **重复 id 警告**：bundle 层已带这两行后，profile patch 里若还有旧安装遗留的
+  `- insert:` 同 id 行 = **根列表重复 → web fail-loud 起不来**；`uninstall.ps1`
+  会外科式清理这两种残留。

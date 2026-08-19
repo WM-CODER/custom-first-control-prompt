@@ -30,9 +30,11 @@
       "default": "./lib/typert.remote-client.js"
     },
     "./src/*": "./src/*",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
   },
   "files": [
+    "cordis.patch.yml",
     "lib/index.js",
     "lib/typert.host.js",
     "lib/typert.host.d.ts",
@@ -52,5 +54,10 @@
     "@deepseek-ai/dsh-system-prompt": "0.1.x",
     "@deepseek-ai/dsh-typert-protocol": "0.1.x",
     "@deepseek-ai/cordis": "4.0.1"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
   }
 }

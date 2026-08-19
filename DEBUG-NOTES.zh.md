@@ -20,7 +20,40 @@
 - 恢复顺序：屏蔽插件行（`<DSH_HOME>/profiles/web/cordis.patch.yml` 删除该 `insert` 或加
   `disabled: true`）→ `web-safe` 逃生 profile 重启 → 修产物后回归。
 
-## 0.3 Changelog 2026-08-19：C-only 收敛 + 进入插件生态
+## 0.4 Changelog 2026-08-19：正规化为官方 bundle 形态（dsh plugin add/remove）
+
+**动机**：junction + 手写 profile patch 行的安装形态绕过 pnpm 管理与 CLI 对账，
+卸载靠自制脚本、残留即炸（典型实锤：改名升级后旧 `@deepseek-ai` scope 期待名
+与新 client.js 注册的 `@wm-coder` 名不匹配 → `loaded without registering` →
+web fail-loud）。官方机制（`docs/user/develop/basic/publish.md` + apps/cli
+`plugin.ts` 源码实锤）：包内声明 `"dsh": {"bundle": {"patch": "./cordis.patch.yml"}}`
+后，`dsh plugin add` 的 pnpm 安装 + 对账自动把 bundle 层追加进 `dsh.profile.bundles`；
+`dsh plugin remove` 依赖与层一起移除。
+
+**改造内容**：
+- 核心包 `package.json` 加 `dsh.bundle` 声明 + `exports`/`files` 补
+  `./cordis.patch.yml`；新增包内 bundle 层 `cordis.patch.yml`（`- insert:` 两行：
+  核心行 name=自己 + 面板行 name=client-ui 包，中性示例默认配置）——官方先例
+  `dsh-base` 的 bundle patch 同样一个 insert 列表引用多个包。
+- **面板保存路径防撞（关键 bug 修复）**：旧逻辑在 profile patch 无核心行时追加
+  `- insert:` 块——bundle 模式下这与 bundle 层撞 id，整个 web 起不来。改为
+  **带 id 的定向覆盖**（非 insert；cordis 语义 last-write-wins，官方先例
+  `dsh-base` patch 里 `chat-agent` 对 `chat-runtime` 的同 id 覆盖）；profile
+  已有旧 insert 行时仍原地替换（legacy 兼容）。profile 无行时 config-read 回退
+  显示 apply 收到的组合配置快照（bundle 默认值），保存即生成覆盖。
+- `cordis.patch.yml.template` 改为用户层覆盖样例（带 id 定向 patch）。
+- `install.ps1`：`dsh plugin add <folder> <folder>/client-ui` 主线（pnpm 透传
+  多 spec 一次装两包，源码实锤 runPlugin 全参数转发），`-Offline` 保留 junction +
+  profile insert 行回退（对账只在 add 内运行，junction 路径必须自带行）。
+- `uninstall.ps1`：`dsh plugin remove` 主线 + 双 scope junction 清理 + patch 行
+  **外科式剥离**（只删本插件的 insert 行/定向覆盖与被清空的 `- insert:` 包装，
+  其它条目/注释不动；废弃了旧的「恢复备份或整删 patch」危险行为）。
+- `verify-deploy.ps1`：组合行检查对两种模式通用；新增安装模式探测（profile
+  package.json 依赖里有无 @wm-coder 包）。
+
+**跨层 patch 语义实锤**（vendor/include + loader 源码）：不带 id 的 insert 追加到
+根列表，两个同 id 根行 = `duplicate entry id` fail-loud；带 id 的非 insert patch
+按 key 覆盖目标 entry 的 config/name/disabled，与层无关。
 
 **收敛决策**：只保留请求路径注入（原 C 路线）作为插件本体；移除 `seedMode`（三路线
 选择器）、`historyMode`、`reapplyAfterCompaction` 配置与 A（hook）/B（append）实现、

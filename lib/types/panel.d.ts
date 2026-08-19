@@ -18,7 +18,9 @@ export declare class PanelService extends TypertRemoteService {
     private seq;
     private paused;
     private dockVisible;
-    constructor(ctx: Context);
+    /** Composed plugin config snapshot, shown when the profile patch has no row. */
+    private readonly effective;
+    constructor(ctx: Context, effective?: PanelConfigView);
     private capture;
     private patchPath;
     private writePolicy;
@@ -27,6 +29,13 @@ export declare class PanelService extends TypertRemoteService {
     private static parseBlock;
     /** Render just the core `custom-first-control-prompt` loader row (4-space indent block). */
     private static coreBlock;
+    /**
+     * Render the targeted (id-keyed, non-insert) profile-layer override for the
+     * core row. The bundle layer (this package's `dsh.bundle` patch) inserts the
+     * loader rows; a profile-layer `- insert:` of the same id would duplicate it
+     * and fail the whole composition, so the panel always writes overrides.
+     */
+    private static coreOverrideBlock;
     private static buildPatch;
     /**
      * Return `existingRaw` with the core `custom-first-control-prompt` row's
@@ -34,8 +43,9 @@ export declare class PanelService extends TypertRemoteService {
      * patch entries, and especially the manually-added panel client row
      * (`ui-custom-first-control-prompt`), which older bundles require and which a
      * blanket overwrite dropped silently (losing the UI). When the file has no
-     * core row yet, a fresh file yields the full header block; otherwise a new
-     * `- insert:` block carrying the core row is appended.
+     * core row yet, a targeted id-keyed override is appended (never an `- insert:`
+     * block: the bundle layer already carries the row, and a duplicate insert
+     * fails the composition).
      */
     private static mergeCoreBlock;
     private readPatch;

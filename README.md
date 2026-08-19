@@ -46,7 +46,7 @@ The reference exchanges are built once at plugin activation into alternating rea
 
 **Verifying the injection works**: in a fresh session ask a question only the injected history can answer (e.g. "repeat our earliest user message") — the model quoting the configured content proves it. `session.history` shows no seed messages (a clean log is a feature, not a failure).
 
-**Panel saves keep other rows**: the panel's config editor updates only this plugin's core row (`custom-first-control-prompt`) and **preserves everything else** in `cordis.patch.yml` — including the hand-written panel client row (`- id: ui-custom-first-control-prompt`), other entries, and comments.
+**Panel save semantics**: the panel's config editor writes an **id-targeted override** into the profile `cordis.patch.yml` (never an insert, so it cannot collide with the bundle layer's row), updating only this plugin's core row (`custom-first-control-prompt`) and **preserving everything else** — other entries, comments, and legacy rows. While the profile patch carries no row, the editor shows the composed config (bundle-layer defaults); saving then creates the override.
 
 ## System sections
 
@@ -96,16 +96,24 @@ The reference history leads the message sequence byte-stably, keeping request pr
 - **Seed text is model-visible reference material** — treat it as prompt text the model reads, not a trusted channel.
 - **No mid-session edits** — configuration changes take effect for new requests after a web restart; a compliant "edit while quiescent" surface-replacement event carrying a source seq reference is deferred.
 
-## FAQ: why does the panel UI need the `ui-custom-first-control-prompt` row?
+## FAQ: how do the plugin and panel rows enter the composition?
 
-The settings panel (config editor / dock / plugin toggles) is a **separate client loader row** `ui-custom-first-control-prompt`; the browser loads the panel bundle and shows the UI only when the web composition includes it. Two sources:
+The core package declares `dsh.bundle` (in-package `cordis.patch.yml`), and the
+reconciliation inside `dsh plugin add` activates that bundle layer — **both the
+core row `custom-first-control-prompt` (server logic: system sections,
+reference-history injection) and the panel row `ui-custom-first-control-prompt`
+(browser UI: settings page, dock, LLM listener) appear together**, with no
+hand-written patch rows. `dsh plugin remove` drops the dependencies and the
+bundle layer together.
 
-1. **Bundled**: `@deepseek-ai/dsh-web-app`'s `cordis.patch.yml` already contains `- id: ui-custom-first-control-prompt` → UI works out of the box;
-2. **Hand-written in the profile**: bundles that do not carry the row → you must add it to `<DSH_HOME>/profiles/web/cordis.patch.yml`, or the browser never loads the panel.
-
-- **Local dev deployments** use the locally built web app (bundle patch restores the row) → no profile entry needed, the UI appears automatically;
-- **npm deployments** (rc.6 etc.): the shipped `dsh-web-app` `cordis.patch.yml` does **not** carry the row → the profile **must** add it to see the UI.
-
-The core row `custom-first-control-prompt` owns the **server-side logic** (system sections, reference-history injection); the panel row owns the **browser UI**. Core-only without the panel row = **features work, no UI** (the panel is an optional shell).
-
-> Duplicate ids: if the bundle already carries the row, adding it again in the profile = **duplicate-id insert → the web fails to boot**; see [INSTALL.md](INSTALL.md) §0 "does the bundle carry the panel row".
+- **Customizing**: never copy a `- insert:` row. Write an **id-targeted
+  (non-insert) patch** in the profile `cordis.patch.yml` to override the bundle
+  row's config (last write wins) — sample in `cordis.patch.yml.template`; the
+  panel's config editor saves exactly this form.
+- **Offline junction installs** skip reconciliation, so the bundle layer never
+  activates — `install.ps1 -Offline` writes the same two rows into the profile
+  patch instead.
+- **Duplicate-id warning**: once the bundle layer carries the rows, any leftover
+  `- insert:` row with the same id in the profile patch (from a manual-era
+  install) = **root-list duplicate → the web fails to boot**; `uninstall.ps1`
+  strips both shapes surgically.

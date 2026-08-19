@@ -1,12 +1,15 @@
 # uninstall.ps1 - one-command plugin removal from a dsh profile.
 #
-# Removes the two profile junctions and the profile patch (restoring the last
-# automatic backup if one exists, otherwise deleting the patch). Everything is
-# reversible: the plugin folder itself is never touched.
+# Official path: dsh plugin --profile web remove (pnpm drops both linked
+# packages; reconciliation removes the bundle layer). Then, regardless of how
+# the plugin was installed: legacy junctions under both scopes are removed and
+# this plugin's rows are stripped surgically from the profile patch — every
+# other entry, comment, and override stays untouched. The plugin folder itself
+# is never touched.
 #
 # Usage:
 #   powershell -ExecutionPolicy Bypass -File uninstall.ps1
-#   powershell -ExecutionPolicy Bypass -File uninstall.ps1 -Home C:\path\.dsh -ProfileName web
+#   powershell -ExecutionPolicy Bypass -File uninstall.ps1 -DshHome C:\path\.dsh -ProfileName web
 
 param(
   [string]$DshHome = '',
@@ -31,7 +34,18 @@ if (-not (Test-Path $profileDir)) {
   exit 1
 }
 
-# ---- junctions ----
+# ---- official removal (only when the packages are pnpm-managed deps) ----
+$dshBin = Join-Path $DshHome 'profiles\node_modules\@deepseek-ai\dsh\lib\bin.js'
+if (Test-Path $dshBin) {
+  & node $dshBin plugin --profile $ProfileName remove '@wm-coder/dsh-custom-first-control-prompt' '@wm-coder/dsh-client-ui-custom-first-control-prompt' 2>&1 | Out-Null
+  if ($LASTEXITCODE -eq 0) {
+    Write-Step 'dsh plugin remove done (deps + bundle layer)'
+  } else {
+    Write-Step 'dsh plugin remove reported a non-zero exit (packages may not be pnpm-managed; continuing with junction cleanup)'
+  }
+}
+
+# ---- junctions (legacy/manual installs) ----
 # Current product scope @wm-coder, plus the legacy @deepseek-ai junctions from
 # pre-rename installs so upgrades clean up both.
 $scopes = @(
@@ -51,20 +65,54 @@ foreach ($scope in $scopes) {
   }
 }
 
-# ---- profile patch ----
+# ---- profile patch: strip only this plugin's rows ----
+# Handles both shapes: legacy `- insert:` list rows and targeted overrides.
+# A `- insert:` wrapper left empty by the strip is removed with it.
 $patchPath = Join-Path $profileDir 'cordis.patch.yml'
-$backups = @(Get-ChildItem (Split-Path $patchPath) -Filter 'cordis.patch.yml.bak-*' -ErrorAction SilentlyContinue |
-  Sort-Object LastWriteTime -Descending)
 if (Test-Path $patchPath) {
-  if ($backups.Count -gt 0) {
-    Copy-Item $backups[0].FullName $patchPath -Force
-    Write-Step "patch restored from $($backups[0].Name)"
+  $raw = [System.IO.File]::ReadAllText($patchPath)
+  $lines = $raw -split "`r?`n"
+  $out = New-Object System.Collections.Generic.List[string]
+  $skipIndent = -1
+  foreach ($line in $lines) {
+    $trim = $line.Trim()
+    $indent = $line.Length - $line.TrimStart().Length
+    if ($skipIndent -ge 0) {
+      if ($trim.StartsWith('- ') -and $indent -le $skipIndent) { $skipIndent = -1 }
+      elseif ($trim -eq '' ) { continue }
+      else { continue }
+    }
+    if ($trim -eq '- id: custom-first-control-prompt' -or $trim -eq '- id: ui-custom-first-control-prompt') {
+      $skipIndent = $indent
+      continue
+    }
+    $out.Add($line)
+  }
+  # Drop `- insert:` wrappers whose entire list was stripped: an insert line
+  # directly followed by a same-or-lower-indent entry, a comment, or EOF.
+  $final = New-Object System.Collections.Generic.List[string]
+  for ($i = 0; $i -lt $out.Count; $i++) {
+    $line = $out[$i]
+    if ($line.Trim() -eq '- insert:') {
+      $indent = $line.Length - $line.TrimStart().Length
+      $next = if ($i + 1 -lt $out.Count) { $out[$i + 1] } else { '' }
+      $nextTrim = $next.Trim()
+      $nextIndent = $next.Length - $next.TrimStart().Length
+      if ($nextTrim -eq '' -or $nextTrim.StartsWith('#') -or ($nextTrim.StartsWith('- ') -and $nextIndent -le $indent)) { continue }
+    }
+    $final.Add($line)
+  }
+  $stripped = ($final -join "`n")
+  if ($stripped -ne $raw) {
+    $stamp = Get-Date -Format 'yyyyMMddHHmmss'
+    Copy-Item $patchPath "$patchPath.bak-$stamp" -Force
+    [System.IO.File]::WriteAllText($patchPath, $stripped, [System.Text.UTF8Encoding]::new($false))
+    Write-Step "plugin rows stripped from patch (backup: cordis.patch.yml.bak-$stamp)"
   } else {
-    Remove-Item $patchPath -Force
-    Write-Step "patch removed (no backup found)"
+    Write-Step 'patch has no plugin rows (skip)'
   }
 } else {
-  Write-Step "patch absent (skip)"
+  Write-Step 'patch absent (skip)'
 }
 
 Write-Output ''
