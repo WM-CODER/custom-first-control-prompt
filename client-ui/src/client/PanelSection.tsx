@@ -158,9 +158,15 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
   const renderTab = (): ReactNode => {
     if (sessionId === undefined) return <div className={css['hint']}>{t('noSession')}</div>
     switch (tab) {
-      case 'preview':
+      case 'preview': {
+        // The registered-section list is assembler state (static text, before
+        // interpolation, without neighboring sections); the real system prompt
+        // only exists inside a captured request, so show the latest one.
+        const latestCaptured = [...(requestsView?.requests ?? [])].reverse()
+          .find(request => request.system.length > 0)
         return (
           <div>
+            <div className={css['blockLabel']}>{t('previewSections')}</div>
             <div className={css['hint']}>{t('previewNote')}</div>
             {preview.length === 0
               ? <div className={css['hint']}>{t('previewEmpty')}</div>
@@ -170,8 +176,13 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
                   <pre className={css['mono']}>{section.text}</pre>
                 </div>
               ))}
+            <div className={css['blockLabel']}>{t('previewRealSystem')}</div>
+            {latestCaptured === undefined
+              ? <div className={css['hint']}>{t('previewRealSystemEmpty')}</div>
+              : <pre className={css['mono']}>{latestCaptured.system}</pre>}
           </div>
         )
+      }
       case 'config': {
         return (
           <div>

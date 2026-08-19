@@ -24,9 +24,11 @@ export declare const en: {
     readonly tabConfig: "Config";
     readonly tabRaw: "RAW";
     readonly tabRequests: "LLM listening";
-    readonly previewSections: "Live system-prompt sections";
+    readonly previewSections: "Registered sections (assembler state)";
     readonly previewEmpty: "No custom-first-control-prompt section is mounted in the current profile.";
-    readonly previewNote: "These are the sections assembled into the system prompt right now.";
+    readonly previewNote: "Static section text as registered with the assembler — uninterpolated and shown without neighboring sections. The request-time form appears below once captured.";
+    readonly previewRealSystem: "Real system prompt (latest captured request)";
+    readonly previewRealSystemEmpty: "No captured request yet. Start listening and send a message; the real system prompt appears here.";
     readonly sectionName: "Name";
     readonly sectionOrder: "Order";
     readonly sectionText: "Text";
@@ -37,14 +39,6 @@ export declare const en: {
     readonly addPair: "Add pair";
     readonly remove: "Remove";
     readonly includeSubagents: "Also seed subagent sessions";
-    readonly historyMode: "Reference-history mode";
-    readonly modeReapply: "Reapply after compaction";
-    readonly modeSessionStart: "Session start only";
-    readonly modePerRequest: "Every request";
-    readonly seedMode: "Conversational-seed mechanism";
-    readonly seedModeHook: "Hook (route A, framework seed boundary)";
-    readonly seedModeAppend: "Append (route B, session-start only, no framework patch)";
-    readonly seedModeIntercept: "Intercept (route C, per-request injection, no log writes)";
     readonly requestModel: "Model";
     readonly requestProvider: "Provider";
     readonly requestTime: "Time";

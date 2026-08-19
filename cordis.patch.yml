@@ -1,6 +1,9 @@
 # Bundle layer of @wm-coder/dsh-custom-first-control-prompt, activated by
 # `dsh plugin add` through this package's `dsh.bundle.patch` declaration.
-# It inserts the two loader rows with neutral sample defaults.
+# It inserts the two loader rows with a self-describing sample configuration:
+# one system-prompt section plus two reference exchanges, so a fresh install
+# immediately demonstrates both features (see the LLM listener to watch them
+# reach the model request verbatim).
 #
 # Customize WITHOUT editing this file: add an id-targeted (non-insert) patch
 # in your profile's cordis.patch.yml — it overrides the matching row's config
@@ -9,20 +12,20 @@
 # duplicate id at the root list fails the whole web composition.
 - insert:
     # Server-side logic: system sections + request-path reference-history
-    # injection. The sample texts are neutral placeholders — replace them.
+    # injection.
     - id: custom-first-control-prompt
       name: '@wm-coder/dsh-custom-first-control-prompt'
       config:
         sections:
           - name: "system"
             order: -50
-            text: "这是测试提示词"
+            text: "系统提示词001"
         history:
-          - user: "用户测试提示词1"
-            assistant: "助手提示词1"
-          - user: "用户测试提示词2"
-            assistant: "助手提示词2"
-        includeSubagents: false
+          - user: "用户发送001"
+            assistant: "助手回复001"
+          - user: "用户发送002"
+            assistant: "助手回复002"
+        includeSubagents: true
 
     # Browser panel (settings page, composer dock, LLM request listener).
     - id: ui-custom-first-control-prompt

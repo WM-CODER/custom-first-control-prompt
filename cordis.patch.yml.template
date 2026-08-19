@@ -13,7 +13,7 @@
 # 临时停用本插件（保留安装）：把 config 换成 `disabled: true` 即可；
 # 彻底卸载用 `dsh plugin --profile web remove`（见 INSTALL.md）。
 #
-# 提示：示例文本用中性测试内容（用户测试提示词1/助手提示词1 这种），不要用
+# 提示：示例文本用中性测试内容（系统提示词001/用户发送001 这种），不要用
 # 「每条回复必须以句号结尾」之类的自指规则——规则性样例会让模型陷入规则复读。
 # 面板「配置编辑」保存生成的正是这种定向覆盖，与本样例等价。
 - id: custom-first-control-prompt
@@ -21,10 +21,10 @@
     sections:
       - name: "system"
         order: -50
-        text: "这是测试提示词"
+        text: "系统提示词001"
     history:
-      - user: "用户测试提示词1"
-        assistant: "助手提示词1"
-      - user: "用户测试提示词2"
-        assistant: "助手提示词2"
-    includeSubagents: false
+      - user: "用户发送001"
+        assistant: "助手回复001"
+      - user: "用户发送002"
+        assistant: "助手回复002"
+    includeSubagents: true

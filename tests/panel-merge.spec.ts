@@ -41,6 +41,18 @@ describe('panel patch merge (composition safety)', () => {
     expect(out).toContain('top-level YAML array')
   })
 
+  it('rebuilds a comment-only file with a bare [] instead of appending after it', () => {
+    // `[]` is a complete YAML document; an override appended after it makes
+    // the file unparseable and fails the whole web boot (observed live).
+    const existing = '# header line\n# second comment\n[]\n'
+    const out = mergeCoreBlock(existing, CONFIG)
+    expect(out).toContain('# header line')
+    expect(out).toContain('# second comment')
+    expect(out).not.toContain('[]')
+    expect(out).toContain('- id: custom-first-control-prompt\n  config:')
+    expect(out).not.toContain('- insert:')
+  })
+
   it('the appended override carries no package name (the bundle row owns resolution)', () => {
     const out = mergeCoreBlock('', CONFIG)
     expect(out).not.toContain('dsh-custom-first-control-prompt')

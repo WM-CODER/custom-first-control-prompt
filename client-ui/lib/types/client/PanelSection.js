@@ -9,7 +9,7 @@ import { useRequestsPoll } from "./poll.js";
 import css from './panel.module.css';
 /** Empty editable config view. */
 function emptyConfig() {
-    return { found: false, sections: [], history: [], includeSubagents: false, historyMode: 'reapply', seedMode: 'append' };
+    return { found: false, sections: [], history: [], includeSubagents: false };
 }
 /**
  * Render the settings section.
@@ -135,21 +135,19 @@ export function PanelSection(props) {
         if (sessionId === undefined)
             return _jsx("div", { className: css['hint'], children: t('noSession') });
         switch (tab) {
-            case 'preview':
-                return (_jsxs("div", { children: [_jsx("div", { className: css['hint'], children: t('previewNote') }), preview.length === 0
+            case 'preview': {
+                // The registered-section list is assembler state (static text, before
+                // interpolation, without neighboring sections); the real system prompt
+                // only exists inside a captured request, so show the latest one.
+                const latestCaptured = [...(requestsView?.requests ?? [])].reverse()
+                    .find(request => request.system.length > 0);
+                return (_jsxs("div", { children: [_jsx("div", { className: css['blockLabel'], children: t('previewSections') }), _jsx("div", { className: css['hint'], children: t('previewNote') }), preview.length === 0
                             ? _jsx("div", { className: css['hint'], children: t('previewEmpty') })
-                            : preview.map(section => (_jsxs("div", { className: css['previewSection'], children: [_jsxs("div", { className: css['blockLabel'], children: [section.name, " (order ", section.order, ")"] }), _jsx("pre", { className: css['mono'], children: section.text })] }, section.name)))] }));
+                            : preview.map(section => (_jsxs("div", { className: css['previewSection'], children: [_jsxs("div", { className: css['blockLabel'], children: [section.name, " (order ", section.order, ")"] }), _jsx("pre", { className: css['mono'], children: section.text })] }, section.name))), _jsx("div", { className: css['blockLabel'], children: t('previewRealSystem') }), latestCaptured === undefined
+                            ? _jsx("div", { className: css['hint'], children: t('previewRealSystemEmpty') })
+                            : _jsx("pre", { className: css['mono'], children: latestCaptured.system })] }));
+            }
             case 'config': {
-                const modeOptions = [
-                    { value: 'reapply', label: 'modeReapply' },
-                    { value: 'session-start', label: 'modeSessionStart' },
-                    { value: 'per-request', label: 'modePerRequest' },
-                ];
-                const seedModeOptions = [
-                    { value: 'hook', label: 'seedModeHook' },
-                    { value: 'append', label: 'seedModeAppend' },
-                    { value: 'intercept', label: 'seedModeIntercept' },
-                ];
                 return (_jsxs("div", { children: [_jsx("div", { className: css['blockLabel'], children: "sections" }), config.sections.map((section, at) => (_jsxs("div", { className: css['editorRow'], children: [_jsxs("label", { className: css['field'], children: [_jsx("span", { children: t('sectionName') }), _jsx("input", { value: section.name, onChange: (event) => { setSection(at, { name: event.target.value }); } })] }), _jsxs("label", { className: css['field'], children: [_jsx("span", { children: t('sectionOrder') }), _jsx("input", { type: "number", value: section.order, onChange: (event) => {
                                                 const order = Number(event.target.value);
                                                 setSection(at, { order: Number.isFinite(order) ? order : 0 });
@@ -173,7 +171,7 @@ export function PanelSection(props) {
                                     ...previous,
                                     history: [...previous.history, { user: '', assistant: '' }],
                                 }));
-                            }, children: t('addPair') }), _jsxs("label", { className: css['row'], children: [_jsx("input", { type: "checkbox", checked: config.includeSubagents, onChange: (event) => { setConfig(previous => ({ ...previous, includeSubagents: event.target.checked })); } }), _jsx("span", { children: t('includeSubagents') })] }), _jsxs("label", { className: css['row'], children: [_jsx("span", { children: t('historyMode') }), _jsx("select", { value: config.historyMode, onChange: (event) => { setConfig(previous => ({ ...previous, historyMode: event.target.value })); }, children: modeOptions.map(option => (_jsx("option", { value: option.value, children: t(option.label) }, option.value))) })] }), _jsxs("label", { className: css['row'], children: [_jsx("span", { children: t('seedMode') }), _jsx("select", { value: config.seedMode, onChange: (event) => { setConfig(previous => ({ ...previous, seedMode: event.target.value })); }, children: seedModeOptions.map(option => (_jsx("option", { value: option.value, children: t(option.label) }, option.value))) })] }), _jsxs("div", { className: css['buttonsRow'], children: [_jsx("button", { type: "button", disabled: busy, onClick: () => { void save(); }, children: t('save') }), _jsx("button", { type: "button", disabled: busy, className: clearArmed ? css['danger'] : '', onClick: () => {
+                            }, children: t('addPair') }), _jsxs("label", { className: css['row'], children: [_jsx("input", { type: "checkbox", checked: config.includeSubagents, onChange: (event) => { setConfig(previous => ({ ...previous, includeSubagents: event.target.checked })); } }), _jsx("span", { children: t('includeSubagents') })] }), _jsxs("div", { className: css['buttonsRow'], children: [_jsx("button", { type: "button", disabled: busy, onClick: () => { void save(); }, children: t('save') }), _jsx("button", { type: "button", disabled: busy, className: clearArmed ? css['danger'] : '', onClick: () => {
                                         if (clearArmed)
                                             void clearAll();
                                         else

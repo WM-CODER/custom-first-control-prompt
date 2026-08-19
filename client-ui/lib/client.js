@@ -4491,9 +4491,11 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			tabConfig: "Config",
 			tabRaw: "RAW",
 			tabRequests: "LLM listening",
-			previewSections: "Live system-prompt sections",
+			previewSections: "Registered sections (assembler state)",
 			previewEmpty: "No custom-first-control-prompt section is mounted in the current profile.",
-			previewNote: "These are the sections assembled into the system prompt right now.",
+			previewNote: "Static section text as registered with the assembler — uninterpolated and shown without neighboring sections. The request-time form appears below once captured.",
+			previewRealSystem: "Real system prompt (latest captured request)",
+			previewRealSystemEmpty: "No captured request yet. Start listening and send a message; the real system prompt appears here.",
 			sectionName: "Name",
 			sectionOrder: "Order",
 			sectionText: "Text",
@@ -4504,14 +4506,6 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			addPair: "Add pair",
 			remove: "Remove",
 			includeSubagents: "Also seed subagent sessions",
-			historyMode: "Reference-history mode",
-			modeReapply: "Reapply after compaction",
-			modeSessionStart: "Session start only",
-			modePerRequest: "Every request",
-			seedMode: "Conversational-seed mechanism",
-			seedModeHook: "Hook (route A, framework seed boundary)",
-			seedModeAppend: "Append (route B, session-start only, no framework patch)",
-			seedModeIntercept: "Intercept (route C, per-request injection, no log writes)",
 			requestModel: "Model",
 			requestProvider: "Provider",
 			requestTime: "Time",
@@ -4553,9 +4547,11 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			tabConfig: "配置",
 			tabRaw: "RAW",
 			tabRequests: "LLM 监听",
-			previewSections: "当前生效的系统提示词段落",
+			previewSections: "注册段落（组装器状态）",
 			previewEmpty: "当前 profile 没有挂载任何 custom-first-control-prompt 段落。",
-			previewNote: "以下是此刻实际组装进系统提示词的段落。",
+			previewNote: "注册到组装器的段落静态文本——未插值、不含相邻段落；请求时的真实形态见下方捕获。",
+			previewRealSystem: "真实系统提示词（最近一次捕获的请求）",
+			previewRealSystemEmpty: "尚无捕获记录。开启监听并发送一条消息后，此处显示真实系统提示词全文。",
 			sectionName: "名称",
 			sectionOrder: "顺序",
 			sectionText: "文本",
@@ -4566,14 +4562,6 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			addPair: "添加对话",
 			remove: "移除",
 			includeSubagents: "同时注入子代理会话",
-			historyMode: "参考历史应用方式",
-			modeReapply: "压缩后重新应用",
-			modeSessionStart: "仅会话开始",
-			modePerRequest: "每次请求",
-			seedMode: "对话式种子机制",
-			seedModeHook: "钩子（路线A，框架种子边界）",
-			seedModeAppend: "追加（路线B，仅会话开始，无需框架补丁）",
-			seedModeIntercept: "拦截（路线C，每请求注入，日志干净）",
 			requestModel: "模型",
 			requestProvider: "提供方",
 			requestTime: "时间",
@@ -4732,39 +4720,39 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			document.head.appendChild(tag);
 		}
 		var panel_module_css_default = {
-			"dockHeader": "fbnt9a_dockHeader",
-			"row": "fbnt9a_row",
-			"success": "fbnt9a_success",
-			"hint": "fbnt9a_hint",
-			"count": "fbnt9a_count",
-			"dockTitle": "fbnt9a_dockTitle",
-			"rawArea": "fbnt9a_rawArea",
-			"badgeOff": "fbnt9a_badgeOff",
-			"field": "fbnt9a_field",
-			"blockLabel": "fbnt9a_blockLabel",
-			"mono": "fbnt9a_mono",
-			"buttonsRow": "fbnt9a_buttonsRow",
+			"card": "fbnt9a_card",
 			"editorRow": "fbnt9a_editorRow",
-			"error": "fbnt9a_error",
-			"requestMeta": "fbnt9a_requestMeta",
-			"dock": "fbnt9a_dock",
 			"requestItem": "fbnt9a_requestItem",
-			"tabs": "fbnt9a_tabs",
-			"panel": "fbnt9a_panel",
-			"danger": "fbnt9a_danger",
+			"badgeOff": "fbnt9a_badgeOff",
+			"requestList": "fbnt9a_requestList",
+			"buttonsRow": "fbnt9a_buttonsRow",
+			"fieldWide": "fbnt9a_fieldWide",
 			"badgeOn": "fbnt9a_badgeOn",
-			"requestBody": "fbnt9a_requestBody",
+			"field": "fbnt9a_field",
+			"tab": "fbnt9a_tab",
+			"mono": "fbnt9a_mono",
+			"requestSummary": "fbnt9a_requestSummary",
+			"danger": "fbnt9a_danger",
+			"panel": "fbnt9a_panel",
+			"requestMeta": "fbnt9a_requestMeta",
 			"role": "fbnt9a_role",
+			"dockTitle": "fbnt9a_dockTitle",
 			"tabActive": "fbnt9a_tabActive",
+			"row": "fbnt9a_row",
+			"dockButtons": "fbnt9a_dockButtons",
+			"tabs": "fbnt9a_tabs",
+			"error": "fbnt9a_error",
+			"dockHeader": "fbnt9a_dockHeader",
+			"success": "fbnt9a_success",
+			"rawArea": "fbnt9a_rawArea",
+			"cardTitle": "fbnt9a_cardTitle",
 			"dockBody": "fbnt9a_dockBody",
 			"previewSection": "fbnt9a_previewSection",
-			"tab": "fbnt9a_tab",
-			"requestSummary": "fbnt9a_requestSummary",
-			"card": "fbnt9a_card",
-			"requestList": "fbnt9a_requestList",
-			"cardTitle": "fbnt9a_cardTitle",
-			"fieldWide": "fbnt9a_fieldWide",
-			"dockButtons": "fbnt9a_dockButtons"
+			"blockLabel": "fbnt9a_blockLabel",
+			"hint": "fbnt9a_hint",
+			"dock": "fbnt9a_dock",
+			"count": "fbnt9a_count",
+			"requestBody": "fbnt9a_requestBody"
 		};
 		//#endregion
 		//#region lib/types/client/PanelSection.js
@@ -4779,9 +4767,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 				found: false,
 				sections: [],
 				history: [],
-				includeSubagents: false,
-				historyMode: "reapply",
-				seedMode: "append"
+				includeSubagents: false
 			};
 		}
 		/**
@@ -4911,27 +4897,48 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					children: t("noSession")
 				});
 				switch (tab) {
-					case "preview": return (0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsx)("div", {
-						className: panel_module_css_default["hint"],
-						children: t("previewNote")
-					}), preview.length === 0 ? (0, react_jsx_runtime.jsx)("div", {
-						className: panel_module_css_default["hint"],
-						children: t("previewEmpty")
-					}) : preview.map((section) => (0, react_jsx_runtime.jsxs)("div", {
-						className: panel_module_css_default["previewSection"],
-						children: [(0, react_jsx_runtime.jsxs)("div", {
-							className: panel_module_css_default["blockLabel"],
-							children: [
-								section.name,
-								" (order ",
-								section.order,
-								")"
-							]
-						}), (0, react_jsx_runtime.jsx)("pre", {
-							className: panel_module_css_default["mono"],
-							children: section.text
-						})]
-					}, section.name))] });
+					case "preview": {
+						const latestCaptured = [...requestsView?.requests ?? []].reverse().find((request) => request.system.length > 0);
+						return (0, react_jsx_runtime.jsxs)("div", { children: [
+							(0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default["blockLabel"],
+								children: t("previewSections")
+							}),
+							(0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default["hint"],
+								children: t("previewNote")
+							}),
+							preview.length === 0 ? (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default["hint"],
+								children: t("previewEmpty")
+							}) : preview.map((section) => (0, react_jsx_runtime.jsxs)("div", {
+								className: panel_module_css_default["previewSection"],
+								children: [(0, react_jsx_runtime.jsxs)("div", {
+									className: panel_module_css_default["blockLabel"],
+									children: [
+										section.name,
+										" (order ",
+										section.order,
+										")"
+									]
+								}), (0, react_jsx_runtime.jsx)("pre", {
+									className: panel_module_css_default["mono"],
+									children: section.text
+								})]
+							}, section.name)),
+							(0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default["blockLabel"],
+								children: t("previewRealSystem")
+							}),
+							latestCaptured === void 0 ? (0, react_jsx_runtime.jsx)("div", {
+								className: panel_module_css_default["hint"],
+								children: t("previewRealSystemEmpty")
+							}) : (0, react_jsx_runtime.jsx)("pre", {
+								className: panel_module_css_default["mono"],
+								children: latestCaptured.system
+							})
+						] });
+					}
 					case "config": return (0, react_jsx_runtime.jsxs)("div", { children: [
 						(0, react_jsx_runtime.jsx)("div", {
 							className: panel_module_css_default["blockLabel"],
@@ -5070,64 +5077,6 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 									}));
 								}
 							}), (0, react_jsx_runtime.jsx)("span", { children: t("includeSubagents") })]
-						}),
-						(0, react_jsx_runtime.jsxs)("label", {
-							className: panel_module_css_default["row"],
-							children: [(0, react_jsx_runtime.jsx)("span", { children: t("historyMode") }), (0, react_jsx_runtime.jsx)("select", {
-								value: config.historyMode,
-								onChange: (event) => {
-									setConfig((previous) => ({
-										...previous,
-										historyMode: event.target.value
-									}));
-								},
-								children: [
-									{
-										value: "reapply",
-										label: "modeReapply"
-									},
-									{
-										value: "session-start",
-										label: "modeSessionStart"
-									},
-									{
-										value: "per-request",
-										label: "modePerRequest"
-									}
-								].map((option) => (0, react_jsx_runtime.jsx)("option", {
-									value: option.value,
-									children: t(option.label)
-								}, option.value))
-							})]
-						}),
-						(0, react_jsx_runtime.jsxs)("label", {
-							className: panel_module_css_default["row"],
-							children: [(0, react_jsx_runtime.jsx)("span", { children: t("seedMode") }), (0, react_jsx_runtime.jsx)("select", {
-								value: config.seedMode,
-								onChange: (event) => {
-									setConfig((previous) => ({
-										...previous,
-										seedMode: event.target.value
-									}));
-								},
-								children: [
-									{
-										value: "hook",
-										label: "seedModeHook"
-									},
-									{
-										value: "append",
-										label: "seedModeAppend"
-									},
-									{
-										value: "intercept",
-										label: "seedModeIntercept"
-									}
-								].map((option) => (0, react_jsx_runtime.jsx)("option", {
-									value: option.value,
-									children: t(option.label)
-								}, option.value))
-							})]
 						}),
 						(0, react_jsx_runtime.jsxs)("div", {
 							className: panel_module_css_default["buttonsRow"],
