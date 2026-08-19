@@ -35,14 +35,29 @@ if (-not (Test-Path $profileDir)) {
 }
 
 # ---- official removal (only when the packages are pnpm-managed deps) ----
+# Detect first: pnpm remove fails hard on absent deps, and under
+# $ErrorActionPreference='Stop' a 2>&1 stderr record would abort the script.
+$managed = $false
+$profilePkg = Join-Path $profileDir 'package.json'
+if (Test-Path $profilePkg) {
+  $managed = (Get-Content $profilePkg -Raw) -match '@wm-coder/dsh-custom-first-control-prompt'
+}
 $dshBin = Join-Path $DshHome 'profiles\node_modules\@deepseek-ai\dsh\lib\bin.js'
-if (Test-Path $dshBin) {
-  & node $dshBin plugin --profile $ProfileName remove '@wm-coder/dsh-custom-first-control-prompt' '@wm-coder/dsh-client-ui-custom-first-control-prompt' 2>&1 | Out-Null
-  if ($LASTEXITCODE -eq 0) {
-    Write-Step 'dsh plugin remove done (deps + bundle layer)'
-  } else {
-    Write-Step 'dsh plugin remove reported a non-zero exit (packages may not be pnpm-managed; continuing with junction cleanup)'
+if ($managed -and (Test-Path $dshBin)) {
+  $prev = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    $null = & node $dshBin plugin --profile $ProfileName remove '@wm-coder/dsh-custom-first-control-prompt' '@wm-coder/dsh-client-ui-custom-first-control-prompt' 2>$null
+    if ($LASTEXITCODE -eq 0) {
+      Write-Step 'dsh plugin remove done (deps + bundle layer)'
+    } else {
+      Write-Step "dsh plugin remove exited $LASTEXITCODE (continuing with junction cleanup)"
+    }
+  } finally {
+    $ErrorActionPreference = $prev
   }
+} else {
+  Write-Step 'packages not pnpm-managed (junction/manual install) - skip official remove'
 }
 
 # ---- junctions (legacy/manual installs) ----
@@ -103,6 +118,12 @@ if (Test-Path $patchPath) {
     $final.Add($line)
   }
   $stripped = ($final -join "`n")
+  # A comment-only file parses to null, and the loader requires a top-level
+  # YAML array — append an explicit empty list when no entries remain.
+  $hasEntry = $final | Where-Object { $t = $_.Trim(); $t -ne '' -and -not $t.StartsWith('#') } | Select-Object -First 1
+  if ($null -eq $hasEntry) {
+    $stripped = $stripped.TrimEnd() + "`n[]`n"
+  }
   if ($stripped -ne $raw) {
     $stamp = Get-Date -Format 'yyyyMMddHHmmss'
     Copy-Item $patchPath "$patchPath.bak-$stamp" -Force
