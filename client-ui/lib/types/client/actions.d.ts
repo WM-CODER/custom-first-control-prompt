@@ -3,11 +3,11 @@
  * Typert Remote namespace `custom-first-control-prompt-panel`. Every method
  * resolves to a `RemoteResult`; callers unwrap it (no carrier rejection).
  *
- * @module @deepseek-ai/dsh-client-ui-custom-first-control-prompt/actions
+ * @module @wm-coder/dsh-client-ui-custom-first-control-prompt/actions
  */
 import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client';
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol';
-import type { PanelAssembleResult, PanelConfigReadResult, PanelConfigView, PanelRequestsView, PanelWriteResult } from '@deepseek-ai/dsh-custom-first-control-prompt/client';
+import type { PanelAssembleResult, PanelConfigReadResult, PanelConfigView, PanelRequestsView, PanelWriteResult } from '@wm-coder/dsh-custom-first-control-prompt/client';
 /** The panel verbs the UI binds; every call names the owning session. */
 export interface PanelActions {
     /** Read the profile patch entry. */

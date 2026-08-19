@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-custom-first-control-prompt
+# @wm-coder/dsh-client-ui-custom-first-control-prompt
 
 Web panel surface for the `custom-first-control-prompt` core plugin. This package is the **browser half** of the panel: it owns UI only, never business state. Every value — the profile patch config, the captured request ring, the dock visibility — lives in the Host `PanelService` and crosses the Typert Remote namespace `custom-first-control-prompt-panel`.
 
@@ -7,7 +7,7 @@ Web panel surface for the `custom-first-control-prompt` core plugin. This packag
 - **Composer dock strip** (`conversation.input.dock`, id `cfcp`): a collapsible bar above the message input. Shows the live LLM-request listener state (default **off**), request count, and the latest captured request in plain text; start/stop, clear, and hide live here. Hidden strips come back from the plugin card in settings.
 - **Settings section** (`settings.section`, id `cfcp-prompt`): four tabs —
   - **Preview**: the sections this plugin actually assembles into the system prompt right now.
-  - **Config**: edit sections, reference history pairs, subagent opt-in, and history mode; save or clear (the plugin stays installed).
+  - **Config**: edit sections, reference history pairs, and subagent opt-in; save or clear (the plugin stays installed).
   - **RAW**: the full `cordis.patch.yml` text with import.
   - **LLM listening**: start/stop, clear, and the captured request ring (real plaintext requests from `llm/stream`).
 - **Plugin card** (`settings.plugin.item`): dock-strip visibility and listening toggles with the live request count.

@@ -5,7 +5,7 @@
  * panel service through its Typert Remote namespace. This package owns no
  * business state: every value arrives from the Host service.
  *
- * @module @deepseek-ai/dsh-client-ui-custom-first-control-prompt/client
+ * @module @wm-coder/dsh-client-ui-custom-first-control-prompt/client
  */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client';
 import { type CfcpKey } from './locales.ts';

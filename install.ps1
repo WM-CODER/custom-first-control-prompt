@@ -51,7 +51,8 @@ foreach ($p in @($pluginPkg, $clientPkg)) {
 }
 
 # ---- junctions ----
-$nmRoot = Join-Path $profileDir 'node_modules\@deepseek-ai'
+# Product scope @wm-coder (framework deps stay @deepseek-ai, installed by dsh).
+$nmRoot = Join-Path $profileDir 'node_modules\@wm-coder'
 New-Item -ItemType Directory -Force -Path $nmRoot | Out-Null
 $junctions = @(
   @{ Name = 'dsh-custom-first-control-prompt'; Target = $pluginPkg },

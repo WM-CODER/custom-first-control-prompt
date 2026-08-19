@@ -1,22 +1,16 @@
-# @deepseek-ai/dsh-custom-first-control-prompt
+# @wm-coder/dsh-custom-first-control-prompt
 
 English | [中文](README.zh.md)
 
-Deployment-configured prompt prefix. Ordered system-prompt sections render ahead of the deployment persona, and configured reference user/assistant exchanges are seeded into the session log once, before the first turn. Static content renders byte-identically on every request, preserving prefix-cache reuse.
+Deployment-configured prompt prefix. Ordered system-prompt sections render ahead of the deployment persona, and configured reference user/assistant exchanges are injected into **every ordinary conversation request** — as real alternating messages prepended on the request path (`llm/stream` interception, zero session-log writes). Static content renders byte-identically on every request, preserving prefix-cache reuse.
 
-> Troubleshooting and test methods for the deployment (web fail-loud causes, duplicate-id inserts, seeded-message turn/step, API verification chain — all paths sanitized) live in [DEBUG-NOTES.zh.md](DEBUG-NOTES.zh.md). One-command install: [INSTALL.md](INSTALL.md). Cross-machine verified walkthrough (npm deployments, framework patch for the conversational tier): [INSTALL-FULL.zh.md](INSTALL-FULL.zh.md); plan analysis: [PLAN-A-REVISED.md](PLAN-A-REVISED.md).
+> Install / deployment / debugging obstacles and test methods: [DEBUG-NOTES.zh.md](DEBUG-NOTES.zh.md) (in Chinese; web fail-loud root causes, duplicate-id inserts, API verification chains — all paths scrubbed). One-command install: [INSTALL.md](INSTALL.md). Full cross-machine walkthrough: [INSTALL-FULL.zh.md](INSTALL-FULL.zh.md) (Chinese).
 
-> **Note**: `panel/` is the legacy in-process dynamic-panel source from the cordis_define era and is **deprecated** — the shipped panel is the formal client bundle in `client-ui/`.
-
-## FAQ: why do I need a `ui-custom-first-control-prompt` row to see the UI?
-
-The settings panel (config editor / dock / plugin toggle) is a **separate client loader row** (`ui-custom-first-control-prompt`): the browser loads the panel bundle and shows the UI only if that row is present in the web composition. It comes from either (a) the `@deepseek-ai/dsh-web-app` bundle's own `cordis.patch.yml` (when the bundle carries it — e.g. local mainline web-app builds), or (b) a manual row in `<DSH_HOME>/profiles/web/cordis.patch.yml`. npm-published `dsh-web-app` (rc.6 etc.) does **not** carry the row (verified via `npm pack`), so npm deployments must add it to the profile patch to see the UI. The core row `custom-first-control-prompt` handles server logic (sections, seeded history); the panel row handles browser UI — installing the core alone keeps the features but hides the UI. Older panel saves overwrote the whole patch file (dropping the manual panel row); current versions preserve all other lines.
-
-## Config
+## Configuration
 
 ```yaml
 - id: custom-first-control-prompt
-  name: '@deepseek-ai/dsh-custom-first-control-prompt'
+  name: '@wm-coder/dsh-custom-first-control-prompt'
   config:
     sections:
       - name: house-rules
@@ -31,108 +25,87 @@ The settings panel (config editor / dock / plugin toggle) is a **separate client
 
 | Key | Default | Meaning |
 |---|---|---|
-| `sections` | — | Ordered system-prompt fragments. Absent or empty registers nothing. |
+| `sections` | — | Ordered system-prompt fragments; absent or empty registers nothing. |
 | `sections[].name` | required | Entry name; the registry sees `custom-first-control-prompt:<name>`. |
-| `sections[].order` | required | Render position among all sections. The shipped bands place the harness identity at −100, the persona at 0, and tool guidance at 100–199; values below 0 prepend ahead of the persona. |
+| `sections[].order` | required | Render position among all sections. Factory convention: harness identity −100, persona 0, tool guidance 100–199; values below 0 prepend ahead of the persona. |
 | `sections[].enabled` | `true` | `false` keeps the entry in configuration without registering it. |
-| `sections[].text` | required | Static section text. Keep it free of volatile values such as timestamps: any change invalidates prefix reuse from the first changed token. |
-| `history` | — | Ordered `user`/`assistant` reference exchanges seeded before the first turn; both texts must be non-empty and must not embed a reserved frame tag case-insensitively (`<user>`, `<assistant>`, `<exchange>`, `<custom-history`, or any closing tag), since an embedded tag would break the exchange structure the frame promises the model. Absent or empty seeds nothing. |
+| `sections[].text` | required | Static section text; keep it free of volatile values — any change breaks prefix reuse from the first changed token. |
+| `history` | — | Ordered `user`/`assistant` reference exchanges injected ahead of every ordinary conversation request; both texts must be non-empty and free of reserved tags (case-insensitive: `<user>`, `<assistant>`, `<exchange>`, `<custom-history` and all closing tags). Absent or empty injects nothing. |
 | `includeSubagents` | `false` | `false` skips sessions whose header meta marks subagent origin. |
-| `historyMode` | `reapply` | Reference-history application mode; see Seeded History below. |
-| `seedMode` | `append` | Conversational-seed mechanism: `intercept` (route C — `llm/stream` clone-and-redispatch, **no framework hook/patch, no log writes; recommended on npm 0.1.x**), `append` (default, route B — `agent/session-start` + `Session.append()`; see the known turn-collision caveat below), or `hook` (route A, framework `agent-loop/session-seed` seed boundary; requires a hook-capable mainline build). See "Conversational seed mechanism (routes A/B/C)". |
-| `reapplyAfterCompaction` | — | Legacy alias: `true` maps to `historyMode: 'reapply'`, `false` maps to `'session-start'`; an explicit `historyMode` wins. |
 
-Misconfiguration fails plugin load with the offending entry named: unpaired roles, empty text, duplicate section names, or a non-finite order.
+Invalid configuration fails plugin load naming the offending entry: empty text, duplicate section names, or a non-finite order. Per-entry section problems (blank/duplicate name, bad order, empty text) and per-pair history problems (empty text, embedded reserved tags) **degrade to skipping that entry with a warning** instead of failing the plugin tree.
+
+## Injection mechanism
+
+The reference exchanges are built once at plugin activation into alternating real `Message` objects (deep-frozen, shared by reference across requests), then prepended onto every ordinary conversation request by an `llm/stream` waterfall listener:
+
+- **Clone and redispatch**: loop-built requests are deep-frozen and marker-tagged (`markAgentLoopRequest(deepFreeze(...))`) and never mutated; the listener clones the request, prepends the seed messages, and redispatches through `ctx.llm.stream`. The clone carries no loop marker, the agent-loop log-reconstruction invariant does not apply to it, and the discarded original is a pure `deriveMessages()` projection.
+- **Zero log writes**: seed messages live only on the request path — real turn numbering starts at 1 with no collisions, forks are ordinary copies, and compaction cannot shadow the reference history (every request re-injects it).
+- **Scope filtering**: auxiliary calls (`purpose`-stamped, e.g. session-title, compaction) and hand-built requests (no `sessionId`) pass straight through; subagent-origin sessions are skipped by default (`includeSubagents: true` opts in).
+- **Panel verification**: not seeing the seed messages in the chat transcript is expected; use the panel's LLM listener to inspect the injected real request (Settings → "Custom first control prompt" → LLM listening, or the dock strip above the composer).
+
+**Verifying the injection works**: in a fresh session ask a question only the injected history can answer (e.g. "repeat our earliest user message") — the model quoting the configured content proves it. `session.history` shows no seed messages (a clean log is a feature, not a failure).
+
+**Panel saves keep other rows**: the panel's config editor updates only this plugin's core row (`custom-first-control-prompt`) and **preserves everything else** in `cordis.patch.yml` — including the hand-written panel client row (`- id: ui-custom-first-control-prompt`), other entries, and comments.
 
 ## System sections
 
-Each enabled entry registers through `ctx.systemPrompt.section()` at plugin load, so the section participates in every assembly exactly like shipped sections: variable interpolation, scoped shadowing, and the assembly waterfall all apply. Static configured text renders identically on every assembly, which is what keeps the request prefix reusable.
+Each enabled entry registers via `ctx.systemPrompt.section()` at plugin load, so it participates in every assembly exactly like the factory sections: variable interpolation, scope shadowing, and the assembly waterfall all apply. Static configured text renders identically in every assembly, which is what keeps the request prefix reusable.
 
-## Seeded history
-
-How the reference history reaches the model is chosen by `seedMode` (the conversational mechanism); `historyMode` then picks the **post-compaction fallback** for the log-based routes:
-
-### Conversational seed mechanism (routes A/B/C)
-
-| | `intercept` (route C) | `append` (route B, default) | `hook` (route A) |
-|---|---|---|---|
-| Injection point | `llm/stream` waterfall: clone the request, prepend the pairs, redispatch | `Session.append()` at `agent/session-start` | `agent-loop/session-seed` waterfall into the `sessions.prepare` boundary |
-| Framework requirement | none (npm 0.1.x works) | none (npm 0.1.x works) | hook-capable build (mainline / `patches/framework-planA*.patch`) |
-| Written to session log | **nothing** | balanced turns 1..N | balanced turns + `session/end-seed` |
-| Turn numbering | real turns start at 1 | **collides on unpatched frameworks** (see Known Limitations) | real turns start at N+1 |
-| Fork / resume | clean (no log state) | fork fails without the boundary relaxation | clean |
-| Compaction-immune | yes, by construction (injected per request) | no (seeds are ordinary surface content) | no |
-| Token cost | fixed 1 copy per request | fixed 1 copy while unshadowed | fixed 1 copy while unshadowed |
-| Visible in chat transcript | no (request path only) | yes | yes |
-| Model-visible reconstruction | session log **plus** deployment config (`cordis.patch.yml`); the log alone does not carry the pairs | from the session log alone | from the session log alone |
-
-Route C never mutates the frozen loop-built request (`markAgentLoopRequest(deepFreeze(...))`); it clones the options object with the prebuilt frozen seed messages prepended and redispatches through `ctx.llm.stream`, guarded against re-entry by request-object identity. The clone carries no loop marker, so the agent-loop log-reconstruction invariant does not apply to it, and the discarded original is a pure `deriveMessages()` projection. The framework has no registration surface for plugin-owned session event types (and `Session.append` cannot carry the `ignorable` envelope), so route C deliberately logs no declaration event: the injected content is a pure function of the deployment configuration and plugin version, and the panel's LLM listener captures the injected request at runtime.
-
-`historyMode` is ignored under `intercept` (there is no log state to reapply). Under `hook`, at session creation the plugin contributes one balanced, fully closed turn per configured pair through the `agent-loop/session-seed` waterfall, so the model sees the reference history as **real alternating user/assistant messages**, not one framed transcript. `historyMode` then picks the **post-compaction fallback**:
-
-| Mode | Creation seed | Post-compaction fallback | Token | Compaction-immune |
-|---|---|---|---|---|
-| `session-start` | conversational turns | none | fixed 1 copy | no (seed may be shadowed) |
-| `reapply` (default) | conversational turns | re-inject the framed transcript when the newest seeded frame is at/below the latest shadow boundary | fixed 1 copy | yes (restored on the next request after being shadowed) |
-| `per-request` | conversational turns | prepend a fresh frame to every request (logged with the step) | accumulates per turn until compaction | yes (most aggressive) |
-
-`reapply` is the recommended default: the seeded conversational turns stay in derived history until compaction shadows them; afterwards the next request injects one fresh framed transcript (a single user message) and keeps it at one copy. The frame fallback is the original transcript format, so post-compaction requests remain readable while the pre-compaction requests show true dialogue roles. In `session-start` mode the listener scans the log for an earlier injection so resume and fork never duplicate it.
-
-## Model Experience
+## Model experience
 
 ### Deployment system sections
 
 #### What the model sees
 
-The configured section texts at their configured order positions — ahead of the persona by default — rendered by [dsh-system-prompt](../../core/system-prompt/README.md) together with the shipped sections.
+Configured section text renders at its configured order position — by default ahead of the persona — alongside the factory sections from [dsh-system-prompt](https://github.com/deepseek-ai/deepseek-harness).
 
-#### Token effect
+#### Token impact
 
-Each section repeats on every request and scales with its rendered length.
+Every section repeats on every request; cost scales with rendered length.
 
-#### KV Cache effect
+#### KV-cache impact
 
-Prefix-stable while section text, order, and the enabled set render identically. Any change may invalidate reuse from the first changed system-prompt token.
+Prefixes stay stable while section text, order, and the enabled set render identically. Any change can break reuse from the first changed system-prompt token.
 
-### Seeded exchange history
+### Reference conversation history
 
 #### What the model sees
 
-Real alternating messages ahead of the first real prompt — one user message per configured `user` text and one assistant message per configured `assistant` text:
+Real alternating messages at the head of every ordinary conversation request — one user message per configured `user` text, one assistant message per configured `assistant` text:
 
 ```markdown
 [user]      configured user text 1
 [assistant] configured assistant text 1
 [user]      configured user text 2
 [assistant] configured assistant text 2
+[user]      the real prompt…
 ```
 
-After compaction shadows the seeded turns, `reapply` and `per-request` fall back to the framed transcript format (one user message):
+#### Token impact
 
-```markdown
-<custom-history source="custom-first-control-prompt">
-The following exchanges are deployment-configured reference history; they did not occur in this session.
-<exchange>
-<user>configured user text</user>
-<assistant>configured assistant text</assistant>
-</exchange>
-</custom-history>
-```
+A fixed single copy of the reference history per request (it never accumulates across turns, and compaction changes nothing — every request re-prepends the same frozen message sequence).
 
-#### Token effect
+#### KV-cache impact
 
-`reapply` and `session-start` cost a fixed one copy of the reference dialogue per request; `per-request` logs an additional frame per turn, so requests within a compression interval carry multiple copies until compaction absorbs the earlier frames.
+The reference history leads the message sequence byte-stably, keeping request prefixes reusable.
 
-#### KV Cache effect
+## Known limitations and deferred work
 
-All three modes keep the reference dialogue first in the message sequence and byte-stable, so the request prefix stays reusable; `reapply` and `per-request` are immune to compaction, while `session-start` reuse lasts until compaction.
+- **The chat UI never shows the reference history** — the seeds live only on the request path; neither alternating messages nor framework rows appear in the conversation UI. Reconstructing model-visible content requires the session log **plus** the deployment config (the framework exposes no plugin event-type registry and `Session.append` cannot carry an `ignorable` envelope) — a deliberate, declared deviation from the harness log-reconstruction default.
+- **Seed text is model-visible reference material** — treat it as prompt text the model reads, not a trusted channel.
+- **No mid-session edits** — configuration changes take effect for new requests after a web restart; a compliant "edit while quiescent" surface-replacement event carrying a source seq reference is deferred.
 
-## Known Limitations and Deferred Work
+## FAQ: why does the panel UI need the `ui-custom-first-control-prompt` row?
 
-- **Route B (`append`) collides with the loop's turn numbering on unpatched frameworks** — the agent reads its last-turn watermark when the agent object is constructed, before `agent/session-start` fires, so an append-seeded session's first real turn reuses seeded turn number 1 and the surface fold lets the real assistant message shadow the seeded one (observed: "the real reply replaces the injected assistant message"). Additionally `Session.append()` never updates `header.seedLength`, so seed-boundary-aware consumers (the agent inbox slices events from `seedLength`) cannot distinguish seed turns from real ones. Prefer `intercept` on npm 0.1.x; route B stays available for comparison testing.
-- **Route C (`intercept`) hides the reference history from the chat transcript** — the pairs live only on the request path, so the conversation UI shows neither the seeded exchanges nor a frame row. Model-visible reconstruction reads the session log plus the deployment configuration: the log alone does not carry the injected pairs (the framework offers no registration surface for plugin-owned session event types, and `Session.append` cannot carry the `ignorable` envelope), which is a deliberate, documented deviation from the harness's log-reconstruction default.
-- **No mid-session mutation** — `reapply` and `per-request` apply configuration changes to the next request immediately; `session-start` applies them to new sessions only. A compliant idle-time edit would append surface-replacement events with cited source seqs and is deferred.
-- **Compaction may shadow the durable seed** — only with `historyMode: 'session-start'`: the seeded conversational turns are ordinary surface content; after compaction they can leave derived history while the system sections remain. `reapply` and `per-request` are immune and fall back to the framed transcript.
-- **`per-request` accumulates logged frames between compactions** — after the seed is shadowed, every request appends one framed `user/message`; earlier frames are absorbed by compaction, but within a compression interval requests carry multiple copies of the reference dialogue (token cost grows linearly with turns until compaction). For a fixed cost use `reapply` (the default).
-- **Seeded turns occupy turn numbers** — the conversational seed consumes turns 1..N, so the first real turn starts at N+1 in session-log numbering. Surface features that display turn numbers see the offset.
-- **Seeded text is model-visible reference material** — the frame disclaims that the exchanges did not occur, but a deployment should treat the content as prompt text the model reads, not as a trusted channel.
+The settings panel (config editor / dock / plugin toggles) is a **separate client loader row** `ui-custom-first-control-prompt`; the browser loads the panel bundle and shows the UI only when the web composition includes it. Two sources:
+
+1. **Bundled**: `@deepseek-ai/dsh-web-app`'s `cordis.patch.yml` already contains `- id: ui-custom-first-control-prompt` → UI works out of the box;
+2. **Hand-written in the profile**: bundles that do not carry the row → you must add it to `<DSH_HOME>/profiles/web/cordis.patch.yml`, or the browser never loads the panel.
+
+- **Local dev deployments** use the locally built web app (bundle patch restores the row) → no profile entry needed, the UI appears automatically;
+- **npm deployments** (rc.6 etc.): the shipped `dsh-web-app` `cordis.patch.yml` does **not** carry the row → the profile **must** add it to see the UI.
+
+The core row `custom-first-control-prompt` owns the **server-side logic** (system sections, reference-history injection); the panel row owns the **browser UI**. Core-only without the panel row = **features work, no UI** (the panel is an optional shell).
+
+> Duplicate ids: if the bundle already carries the row, adding it again in the profile = **duplicate-id insert → the web fails to boot**; see [INSTALL.md](INSTALL.md) §0 "does the bundle carry the panel row".

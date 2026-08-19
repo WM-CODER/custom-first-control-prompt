@@ -1,20 +1,19 @@
-# @deepseek-ai/dsh-custom-first-control-prompt
+# @wm-coder/dsh-custom-first-control-prompt
 
 [English](README.md) | 中文
 
-部署方配置的提示词前缀。有序的系统提示词段渲染在部署 persona 之前，配置的 user/assistant 参考对话在首个 turn 之前一次性注入会话日志。静态内容在每次请求中逐字节一致地渲染，从而保持前缀缓存复用。
+部署方配置的提示词前缀。有序的系统提示词段渲染在部署 persona 之前，配置的 user/assistant 参考对话被注入到**每一个普通对话请求**中——作为真实的交替 user/assistant 消息前置在请求路径上（`llm/stream` 请求拦截，会话日志零写入）。静态内容在每次请求中逐字节一致地渲染，从而保持前缀缓存复用。
 
 > 安装 / 部署 / 调试中遇到过的阻碍与测试方法见
 > [DEBUG-NOTES.zh.md](DEBUG-NOTES.zh.md)（web fail-loud 根因、同 id 重复 insert、
-> 种子消息 turn/step、API 验证链路等，路径全部脱敏）；一键安装见 [INSTALL.md](INSTALL.md)；
-> 跨机完整实测流程见 [INSTALL-FULL.zh.md](INSTALL-FULL.zh.md)（含 npm 部署打框架补丁的
-> 完全版改造），方案分析见 [PLAN-A-REVISED.md](PLAN-A-REVISED.md)。
+> API 验证链路等，路径全部脱敏）；一键安装见 [INSTALL.md](INSTALL.md)；
+> 跨机完整实测流程见 [INSTALL-FULL.zh.md](INSTALL-FULL.zh.md)。
 
 ## 配置
 
 ```yaml
 - id: custom-first-control-prompt
-  name: '@deepseek-ai/dsh-custom-first-control-prompt'
+  name: '@wm-coder/dsh-custom-first-control-prompt'
   config:
     sections:
       - name: house-rules
@@ -34,68 +33,27 @@
 | `sections[].order` | 必填 | 在全部段中的渲染位置。出厂约定：harness identity 为 −100，persona 为 0，工具指导为 100–199；小于 0 的值前置到 persona 之前。 |
 | `sections[].enabled` | `true` | `false` 时条目保留在配置中但不注册。 |
 | `sections[].text` | 必填 | 静态段文本。不要放入时间戳等易变值：任何变化都会从首个变化的 token 起破坏前缀复用。 |
-| `history` | — | 在首个 turn 之前注入的有序 `user`/`assistant` 参考对话；两者文本都必须非空，且不得包含框架保留标签（大小写不敏感：`<user>`、`<assistant>`、`<exchange>`、`<custom-history` 及所有闭合标签），因为内嵌标签会破坏框架向模型承诺的对话结构。缺省或为空时不注入。 |
+| `history` | — | 注入到每个普通对话请求的有序 `user`/`assistant` 参考对话；两者文本都必须非空，且不得包含保留标签（大小写不敏感：`<user>`、`<assistant>`、`<exchange>`、`<custom-history` 及所有闭合标签）。缺省或为空时不注入。 |
 | `includeSubagents` | `false` | `false` 时跳过 header meta 标记为 subagent 来源的会话。 |
-| `historyMode` | `reapply` | 参考对话的应用模式，见下方「预置历史」。 |
-| `seedMode` | `append` | 对话式种子的注入机制：`intercept`（C 路线，`llm/stream` 克隆重分发，**不依赖框架钩子/补丁、日志零写入，npm 0.1.x 推荐**）、`append`（B 路线，默认，`agent/session-start` + `Session.append()`；注意下方已知的 turn 撞号缺陷）或 `hook`（A 路线，框架 `agent-loop/session-seed` 种子边界，需含钩子的主线构建）。见「对话式种子机制（A/B/C 路线）」。 |
-| `reapplyAfterCompaction` | — | 兼容别名：`true` 映射为 `historyMode: 'reapply'`，`false` 映射为 `'session-start'`；显式 `historyMode` 优先。 |
 
-配置错误会使插件加载失败并指明出错条目：角色不成对、文本为空、section 重名或 order 非有限数。
+配置错误会使插件加载失败并指明出错条目：文本为空、section 重名或 order 非有限数。`sections` 的逐条问题（空名/重名/坏 order/空文本）与 `history` 的逐对问题（空文本/内嵌保留标签）会**降级为跳过该条并告警**，不会拖垮整个插件树。
 
-## 对话式种子机制（A/B/C 路线）
+## 注入机制
 
-| | `intercept`（C 路线） | `append`（B 路线，默认） | `hook`（A 路线） |
-|---|---|---|---|
-| 注入点 | `llm/stream` waterfall：克隆请求、前置种子、重新分发 | `agent/session-start` 时 `Session.append()` | `agent-loop/session-seed` waterfall 进 `sessions.prepare` 种子边界 |
-| 框架要求 | 无（npm 0.1.x 即可） | 无（npm 0.1.x 即可） | 含钩子的构建（主线 / `patches/framework-planA*.patch`） |
-| 写入会话日志 | **无** | 闭合 turn 1..N | 闭合 turn + `session/end-seed` 标记 |
-| turn 编号 | 真实 turn 从 1 开始，无冲突 | **未打补丁框架上撞号**（见已知限制） | 真实 turn 从 N+1 开始 |
-| fork / resume | 正常（无日志状态） | 无边界放宽的框架上 fork 失败 | 正常 |
-| 压缩免疫 | 是，机制保证（每请求注入） | 否（种子是普通 surface 内容） | 否 |
-| Token 成本 | 每请求固定 1 份 | 未被遮蔽时固定 1 份 | 未被遮蔽时固定 1 份 |
-| 聊天界面可见 | 否（仅请求路径） | 是 | 是 |
-| 模型可见内容重建 | 会话日志 **+** 部署配置（`cordis.patch.yml`）；日志本身不含种子对 | 仅从会话日志即可 | 仅从会话日志即可 |
+参考对话在插件加载时一次性构建为交替的真实 `Message` 对象（深冻结、跨请求共享引用），随后在每个普通对话请求上由 `llm/stream` waterfall 监听器前置注入：
 
-**C 路线（`seedMode: "intercept"`，npm 0.1.x 推荐）**：在 `llm/stream` waterfall 把普通对话请求克隆一份、把预构建的交替 user/assistant 种子消息前置后重新分发，不写会话日志。原请求是深冻结且带 loop 标记的（`markAgentLoopRequest(deepFreeze(...))`），从不被修改；克隆体无 loop 标记，agent-loop 的日志重建不变式不适用于它，被丢弃的原请求只是 `deriveMessages()` 的纯投影。因框架没有插件自有会话事件类型的注册面（且 `Session.append` 无法携带 `ignorable` 信封），C 路线**有意不落任何声明事件**：注入内容是部署配置的纯函数，运行时可通过面板「LLM 监听」直接看到注入后的请求。`historyMode` 在 intercept 下被忽略（无日志状态可回退）。
+- **克隆重分发**：循环构建的请求是深冻结且带 loop 标记的（`markAgentLoopRequest(deepFreeze(...))`），从不被修改；监听器克隆请求、前置种子消息、经 `ctx.llm.stream` 重新分发。克隆体无 loop 标记，agent-loop 的日志重建不变式不适用于它，被丢弃的原请求只是 `deriveMessages()` 的纯投影。
+- **零日志写入**：种子消息只存在于请求路径，不进会话日志——真实 turn 编号从 1 开始无冲突、fork 是普通副本、压缩无法遮蔽参考历史（每个请求都重新注入）。
+- **范围过滤**：辅助调用（`purpose` 标记，如 session-title、compaction）与手工构造请求（无 `sessionId`）直接放行不注入；subagent 来源会话默认跳过（`includeSubagents: true` 开启）。
+- **面板验证**：聊天 transcript 看不到种子消息是预期行为；用面板「LLM 监听」直接查看注入后的真实请求（设置 → 「自定义优先控制提示词」→ LLM 监听，或对话输入框上方的 dock 条）。
 
-**B 路线（`seedMode: "append"`）**：插件在 `agent/session-start` 用 `Session.append()` 把每对参考历史写成**真实闭合的交替 user/assistant 消息**，不依赖框架钩子/补丁；只做会话开头这一次注入（不注册钩子监听、不做 pre-step 帧回退，`historyMode` 在 append 下被忽略）。
+**验证注入生效**：新建会话并提问一个只有注入历史才能回答的问题（如「重复我们最早的那条用户消息」），模型答出配置内容即生效；`session.history` 里看不到种子消息（日志干净是特性而非故障）。
 
-**A 路线（`seedMode: "hook"`）**：框架 `agent-loop/session-seed` 种子边界，需含钩子的主线构建，fork 兼容。
-
-**面板启用/选择**：设置 → 「自定义优先控制提示词」→ 配置 tab → 「对话式种子机制」下拉选 **Intercept (route C)** / **Append (route B)** / **Hook (route A)** 并保存。首次打开若显示与配置不符，说明客户端缓存了旧资源——**硬刷新**（Ctrl+Shift+R）后即正确。
-
-**验证 C 在生效**：新建会话并提问一个只有注入历史才能回答的问题（如「重复我们最早的那条用户消息」），模型答出配置内容即生效；`session.history` 里**看不到**种子消息（日志干净是特性而非故障），面板的「LLM 监听」可看到注入后的真实请求。
-
-**验证 B 在生效**：新建会话，调 `session.history`——种子轮次应排在 `permission/preset` 等系统事件**之后**，且整个日志**没有 `session/end-seed`**（A 路线有该边界标记）。
-
-**面板保存不丢其它行**：面板「配置编辑」保存只更新本插件核心行（`custom-first-control-prompt`）的配置，**保留 `cordis.patch.yml` 里其它所有内容**——包括手动写入的面板客户端行（`- id: ui-custom-first-control-prompt`）、其它条目与注释。旧版本会整文件覆盖并抹掉手动面板行（UI 失联），已修复。
-
-**已知限制**：
-- **B 路线 turn 撞号并遮蔽种子回复**（无 seed 边界放宽/钩子的框架）：agent 在构造时读取最新 turn 水位线，早于 `agent/session-start` 触发，因此 append 播种的会话里真实首个 turn 复用种子的 `turn:1`，surface 折叠让真实 assistant 消息**遮蔽**种子 assistant 消息（实测：真实回复「干掉」注入回复）；且 `Session.append()` 不更新 `header.seedLength`，inbox 等按 seedLength 切片的消费者无法区分种子与真实事件。**npm 0.1.x 请改用 C 路线**；B 保留用于对比测试。
-- **B 路线 fork 含种子会话会失败**（无 seed 边界放宽的框架）：fork 会把父日志前缀作为子会话 seed 传入 `sessions.prepare`，被边界校验拒绝。
-- **C 路线聊天界面看不到参考历史**：种子只存在于请求路径，会话 UI 既不显示交替消息也不显示框架行；模型可见内容的重建需要会话日志 + 部署配置（框架没有插件事件类型注册面，`Session.append` 也无法携带 `ignorable` 信封），这是对 harness 日志重建默认原则的有意偏离，已在此声明。
+**面板保存不丢其它行**：面板「配置编辑」保存只更新本插件核心行（`custom-first-control-prompt`）的配置，**保留 `cordis.patch.yml` 里其它所有内容**——包括手动写入的面板客户端行（`- id: ui-custom-first-control-prompt`）、其它条目与注释。
 
 ## 系统段
 
 每个启用的条目在插件加载时通过 `ctx.systemPrompt.section()` 注册，因此与出厂段完全一样参与每次组装：变量插值、scope 遮蔽与组装 waterfall 全部适用。静态配置文本在每次组装中渲染结果一致，这正是请求前缀保持可复用的原因。
-
-## 预置历史
-
-会话创建时，插件通过 `agent-loop/session-seed` 瀑布为每对配置贡献**一轮完整闭合的平衡 turn**，模型看到的是**真实的 user/assistant 交替对话消息**，而非单条框架文本。`historyMode` 决定的是**压缩遮蔽后的回退**：
-
-| 模式 | 创建时种子 | 压缩遮蔽后回退 | Token | 压缩免疫 |
-|---|---|---|---|---|
-| `session-start` | 对话式 turn | 无 | 固定 1 份 | 否（可能被遮蔽） |
-| `reapply`（默认） | 对话式 turn | 最新种子帧被遮蔽后，下一请求注入一条 transcript 框架 | 固定 1 份 | 是（遮蔽后下一请求自动补回） |
-| `per-request` | 对话式 turn | 每次模型请求都前置注入一条新框架（随 step 持久化） | 压缩间隔内随轮次累积 | 是（最彻底） |
-
-> **框架含钩子时的真实行为（实测）**：`agent-loop/session-seed` 监听器在任何模式下都
-> 无条件注入对话式种子；`reapply`/`per-request` 的 pre-step 逻辑仍会叠加注入帧——
-> 即钩子部署 + `reapply`/`per-request` = **对话式种子 + 每请求一帧**（内容重复、
-> token 翻倍）。因此**钩子部署下请用 `session-start`**（纯对话式，靠 `hasSeededHistory`
-> 挡掉帧回退）。框架无钩子（npm 0.1.x 发布物）时无此问题，仅走帧路径/基础档。
-
-`reapply` 是推荐默认：对话式种子轮次留在派生历史中直到被压缩遮蔽；此后下一请求注入一条新 transcript 框架（单条 user 消息）并保持 1 份。框架回退即原 transcript 格式，因此压缩前请求显示真实对话角色，压缩后请求仍可读。`session-start` 模式下监听器会扫描日志中是否已有本插件的注入，resume 与 fork 不会重复。
 
 ## 模型体验
 
@@ -103,7 +61,7 @@
 
 #### 模型所见
 
-配置段的文本按各自配置的 order 位置渲染——默认在 persona 之前——由 [dsh-system-prompt](../../core/system-prompt/README.md) 与出厂段一起渲染。
+配置段的文本按各自配置的 order 位置渲染——默认在 persona 之前——由 [dsh-system-prompt](https://github.com/deepseek-ai/deepseek-harness) 与出厂段一起渲染。
 
 #### Token 影响
 
@@ -113,51 +71,33 @@
 
 段文本、order 与启用集合渲染一致时前缀稳定。任何变化都可能从首个变化的系统提示词 token 起破坏复用。
 
-### 预置对话历史
+### 参考对话历史
 
 #### 模型所见
 
-第一条真实 prompt 之前出现真实的交替消息——每个配置的 `user` 文本一条 user 消息、每个配置的 `assistant` 文本一条 assistant 消息：
+每个普通对话请求的消息序列头部出现真实的交替消息——每个配置的 `user` 文本一条 user 消息、每个配置的 `assistant` 文本一条 assistant 消息：
 
 ```markdown
 [user]      configured user text 1
 [assistant] configured assistant text 1
 [user]      configured user text 2
 [assistant] configured assistant text 2
-```
-
-压缩遮蔽种子轮次后，`reapply` 与 `per-request` 回退为 transcript 框架格式（单条 user 消息）：
-
-```markdown
-<custom-history source="custom-first-control-prompt">
-The following exchanges are deployment-configured reference history; they did not occur in this session.
-<exchange>
-<user>configured user text</user>
-<assistant>configured assistant text</assistant>
-</exchange>
-</custom-history>
+[user]      the real prompt…
 ```
 
 #### Token 影响
 
-`reapply` 与 `session-start` 模式为每请求固定 1 份参考对话；`per-request` 模式每轮追加一条持久化框架，压缩间隔内请求携带多份，直到压缩吸收较早的框架。
+每请求固定 1 份参考对话（不随轮次累积，压缩也不影响——每个请求重新前置同一份冻结消息序列）。
 
 #### KV 缓存影响
 
-三种模式都把参考对话放在消息序列首位且字节稳定，请求前缀保持可复用；`reapply` 与 `per-request` 不受 compaction 影响，`session-start` 的复用持续到 compaction 之前。
+参考对话放在消息序列首位且字节稳定，请求前缀保持可复用。
 
 ## 已知限制与延后工作
 
-- **框架钩子仅在主线构建** — `agent-loop/session-seed` 钩子只存在于包含 `b1601bec35`
-  提交的主线构建；**npm 0.1.x 发布物（含 rc.6）实测无此钩子**，此类部署自动落基础档
-  （帧）。要完全版需打框架补丁（见 [INSTALL-FULL.zh.md](INSTALL-FULL.zh.md) 步骤 B）。
-- **钩子部署下请用 `session-start`** — 见「预置历史」注释：钩子存在时 `reapply`/
-  `per-request` 会对话式种子与帧双重注入。
-- **不支持会话中段修改** — `reapply` 与 `per-request` 模式下配置变更对下一个请求即时生效；`session-start` 模式只对新会话生效。合规的"静止时编辑"应追加带 source seq 引用的 surface 替换事件，已延后。
-- **compaction 可能遮蔽持久 seed** — 仅当 `historyMode: 'session-start'` 时成立：对话式种子轮次是普通 surface 内容，compaction 之后可能从派生历史中消失，而系统段仍然保留。`reapply` 与 `per-request` 免疫此问题并回退到 transcript 框架。
-- **`per-request` 会随请求轮次累积持久化框架** — 种子被遮蔽后，每轮请求都会在日志中追加一条框架 `user/message`；较早的框架随后会被 compaction 吸收，但压缩间隔内的请求会携带多份参考对话（Token 成本随轮次线性增长，直到压缩）。需要固定成本请用 `reapply`（默认）。
-- **种子轮次占用轮次编号** — 对话式种子占用第 1..N 轮，第一个真实轮次从 N+1 开始。展示轮次编号的界面会看到偏移。
-- **预置文本是模型可见的参考材料** — 框架已声明这些对话并未真实发生，但部署方应将其视为模型读取的提示词文本，而非可信通道。
+- **聊天界面看不到参考历史** — 种子只存在于请求路径，会话 UI 既不显示交替消息也不显示框架行；模型可见内容的重建需要会话日志 + 部署配置（框架没有插件事件类型注册面，`Session.append` 也无法携带 `ignorable` 信封），这是对 harness 日志重建默认原则的有意偏离，已在此声明。
+- **种子文本是模型可见的参考材料** — 部署方应将其视为模型读取的提示词文本，而非可信通道。
+- **不支持会话中段修改** — 配置变更在 web 重启后对新请求生效；合规的"静止时编辑"应追加带 source seq 引用的 surface 替换事件，已延后。
 
 ## FAQ：面板 UI 为什么需要配置 `ui-custom-first-control-prompt` 行？
 
@@ -167,8 +107,8 @@ The following exchanges are deployment-configured reference history; they did no
 2. **profile 手写**：bundle **不带**该行 → 必须在 `<DSH_HOME>/profiles/web/cordis.patch.yml` 补写，浏览器才会加载面板。
 
 - **本机开发部署**用本地构建的 web app（bundle patch 已恢复该行）→ 不用在 profile 写、UI 自动出现；
-- **npm 部署**（rc.6 等）：`npm pack` 实测 `dsh-web-app` 的 `cordis.patch.yml` **不含**该行 → **必须**在 profile 补写这行才能看到 UI。
+- **npm 部署**（rc.6 等）：实测 `dsh-web-app` 的 `cordis.patch.yml` **不含**该行 → **必须**在 profile 补写这行才能看到 UI。
 
-核心行 `custom-first-control-prompt` 管**服务端逻辑**（系统段、参考历史种子）；面板行管**浏览器 UI**。只装核心不补面板行 = **功能在、UI 不显示**（面板是可选外壳）。旧版本面板保存会**整文件覆盖** `cordis.patch.yml` 抹掉手写的面板行（UI 失联）；当前版本保存只更新核心行、**保留其它行**（含面板行）。
+核心行 `custom-first-control-prompt` 管**服务端逻辑**（系统段、参考历史注入）；面板行管**浏览器 UI**。只装核心不补面板行 = **功能在、UI 不显示**（面板是可选外壳）。
 
 > 注意重复 id：若 bundle 已自带该行，profile 再写一次 = **同 id 重复 insert → web 起不来**；判定方法见 [INSTALL.md](INSTALL.md) §0「bundle 是否自带面板行」。

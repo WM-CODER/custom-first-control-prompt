@@ -135,7 +135,7 @@ export class PanelService extends TypertRemoteService {
   }
 
   private static parseBlock(raw: string): PanelConfigView {
-    const out: PanelConfigView = { found: false, sections: [], history: [], includeSubagents: false, historyMode: 'reapply', seedMode: 'append' }
+    const out: PanelConfigView = { found: false, sections: [], history: [], includeSubagents: false }
     if (raw.indexOf('custom-first-control-prompt') < 0) return out
     out.found = true
     let zone: '' | 'sections' | 'history' = ''
@@ -144,7 +144,7 @@ export class PanelService extends TypertRemoteService {
       const t = line.trim()
       if (t.indexOf('sections:') === 0) { zone = 'sections'; cur = null; continue }
       if (t.indexOf('history:') === 0) { zone = 'history'; cur = null; continue }
-      if (t.indexOf('includeSubagents:') === 0 || t.indexOf('historyMode:') === 0 || t.indexOf('seedMode:') === 0) { zone = ''; cur = null }
+      if (t.indexOf('includeSubagents:') === 0) { zone = ''; cur = null }
       if (zone === 'sections') {
         if (t.indexOf('- name:') === 0) {
           cur = { name: PanelService.yamlUnquote(t.slice(t.indexOf(':') + 1)), order: 0, text: '', enabled: true }
@@ -164,10 +164,6 @@ export class PanelService extends TypertRemoteService {
       } else if (zone === '') {
         const m = t.match(/^includeSubagents:\s*(true|false)/)
         if (m) out.includeSubagents = m[1] === 'true'
-        const h = t.match(/^historyMode:\s*(?:"([^"]+)"|'([^']+)'|(\S+))/)
-        if (h) out.historyMode = h[1] ?? h[2] ?? h[3] ?? 'reapply'
-        const sm = t.match(/^seedMode:\s*(?:"([^"]+)"|'([^']+)'|(\S+))/)
-        if (sm) out.seedMode = sm[1] ?? sm[2] ?? sm[3] ?? 'hook'
       }
     }
     return out
@@ -178,14 +174,6 @@ export class PanelService extends TypertRemoteService {
     const sections = Array.isArray(config?.sections) ? config.sections : []
     const history = Array.isArray(config?.history) ? config.history : []
     const includeSubagents = config?.includeSubagents === true
-    const mode = config?.historyMode === 'per-request' || config?.historyMode === 'session-start'
-      ? config.historyMode
-      : 'reapply'
-    // Route B (append) is the default mechanism; explicit 'hook' (route A) or
-    // 'intercept' (route C) opts into that mechanism instead.
-    const seedMode = config?.seedMode === 'hook' || config?.seedMode === 'intercept'
-      ? config.seedMode
-      : 'append'
     const secBlock = sections.length > 0
       ? sections.map(s => `          - name: ${PanelService.yamlScalar(s.name)}\n            order: ${Number(s.order) || 0}\n            text: ${PanelService.yamlScalar(s.text)}`).join('\n')
       : ''
@@ -198,8 +186,6 @@ export class PanelService extends TypertRemoteService {
       + (sections.length > 0 ? `        sections:\n${secBlock}\n` : '        sections: []\n')
       + (history.length > 0 ? `        history:\n${hisBlock}\n` : '        history: []\n')
       + `        includeSubagents: ${includeSubagents ? 'true' : 'false'}\n`
-      + `        historyMode: ${PanelService.yamlScalar(mode)}\n`
-      + `        seedMode: ${PanelService.yamlScalar(seedMode)}\n`
   }
 
   private static buildPatch(config: PanelConfigView | undefined): string {
@@ -296,7 +282,7 @@ export class PanelService extends TypertRemoteService {
     void agent
     const existing = await this.readPatch()
     return this.writePatch(PanelService.mergeCoreBlock(existing.ok ? existing.raw : '', {
-      found: true, sections: [], history: [], includeSubagents: false, historyMode: 'reapply', seedMode: 'append',
+      found: true, sections: [], history: [], includeSubagents: false,
     }))
   }
 

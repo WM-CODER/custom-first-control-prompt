@@ -1,20 +1,19 @@
 # verify-deploy.ps1 - deployment health check for custom-first-control-prompt
 #
 # One-shot diagnostics over a dsh web profile:
-#   plugin resolvable (with Config) / composition rows / seedMode /
+#   plugin resolvable (with Config) / composition rows /
 #   boot manifest panel package / panel bundle route / web process /
 #   plugin dir git state / restart-needed hint.
 #
 # Usage:
 #   powershell -ExecutionPolicy Bypass -File verify-deploy.ps1
-#   powershell -ExecutionPolicy Bypass -File verify-deploy.ps1 -DshHome C:\path\.dsh -Port 3080 -ExpectedSeedMode intercept
+#   powershell -ExecutionPolicy Bypass -File verify-deploy.ps1 -DshHome C:\path\.dsh -Port 3080
 
 param(
   [string]$DshHome = '',
   [string]$ProfileName = 'web',
   [string]$PluginDir = '',
-  [int]$Port = 3080,
-  [string]$ExpectedSeedMode = ''
+  [int]$Port = 3080
 )
 
 $ErrorActionPreference = 'Continue'
@@ -55,7 +54,7 @@ $resolve = ''
 $code = 1
 if (Test-Path $profileDir) {
   Push-Location $profileDir
-  $resolve = node -e "import('@deepseek-ai/dsh-custom-first-control-prompt').then(m => { const p = m.default ?? m; console.log('keys=' + Object.keys(p).sort().join(',') + ';hasConfig=' + !!(p.Config && p.Config['~standard'])) }).catch(e => { console.error(e.message); process.exit(1) })" 2>&1 | Out-String
+  $resolve = node -e "import('@wm-coder/dsh-custom-first-control-prompt').then(m => { const p = m.default ?? m; console.log('keys=' + Object.keys(p).sort().join(',') + ';hasConfig=' + !!(p.Config && p.Config['~standard'])) }).catch(e => { console.error(e.message); process.exit(1) })" 2>&1 | Out-String
   $code = $LASTEXITCODE
   Pop-Location
 }
@@ -65,7 +64,7 @@ if ($code -eq 0 -and $resolve -match 'hasConfig=true') {
   Check "plugin resolvable with Config schema" $false $resolve.Trim() "junction present? plugin lib intact?"
 }
 
-# 2. composition rows + seedMode
+# 2. composition rows
 $dump = ''
 if (Test-Path "$modulesDir\@deepseek-ai\dsh\lib\bin.js") {
   Push-Location $profileDir
@@ -74,9 +73,6 @@ if (Test-Path "$modulesDir\@deepseek-ai\dsh\lib\bin.js") {
 }
 Check "composition has core row" ($dump -match '(?m)- id: custom-first-control-prompt') "" "core plugin row missing from bundle/profile"
 Check "composition has panel row" ($dump -match '(?m)- id: ui-custom-first-control-prompt') "" "npm 0.1.x needs the panel row in profile patch"
-if ($ExpectedSeedMode -ne '') {
-  Check "seedMode = $ExpectedSeedMode" ($dump -match "seedMode:\s*$ExpectedSeedMode") "actual seedMode differs" "edit cordis.patch.yml config"
-}
 
 # 3. boot manifest + panel bundle
 try {
@@ -87,7 +83,7 @@ try {
 }
 
 try {
-  $b = Invoke-WebRequest -Uri "$base/plugins/@deepseek-ai/dsh-client-ui-custom-first-control-prompt/client.js" -UseBasicParsing -TimeoutSec 10
+  $b = Invoke-WebRequest -Uri "$base/plugins/@wm-coder/dsh-client-ui-custom-first-control-prompt/client.js" -UseBasicParsing -TimeoutSec 10
   Check "panel bundle route 200" ($b.StatusCode -eq 200) "HTTP $($b.StatusCode)" "panel package/junction intact?"
 } catch {
   Check "panel bundle route 200" $false ($_.Exception.Message) "panel row/package issue"

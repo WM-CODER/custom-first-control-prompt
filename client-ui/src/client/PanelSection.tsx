@@ -33,7 +33,7 @@ export interface PanelSectionProps extends PropsLocale<'cfcp.panel'> {
 
 /** Empty editable config view. */
 function emptyConfig(): PanelConfigView {
-  return { found: false, sections: [], history: [], includeSubagents: false, historyMode: 'reapply', seedMode: 'append' }
+  return { found: false, sections: [], history: [], includeSubagents: false }
 }
 
 /**
@@ -173,16 +173,6 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
           </div>
         )
       case 'config': {
-        const modeOptions: readonly { value: string; label: CfcpKey }[] = [
-          { value: 'reapply', label: 'modeReapply' },
-          { value: 'session-start', label: 'modeSessionStart' },
-          { value: 'per-request', label: 'modePerRequest' },
-        ]
-        const seedModeOptions: readonly { value: string; label: CfcpKey }[] = [
-          { value: 'hook', label: 'seedModeHook' },
-          { value: 'append', label: 'seedModeAppend' },
-          { value: 'intercept', label: 'seedModeIntercept' },
-        ]
         return (
           <div>
             <div className={css['blockLabel']}>sections</div>
@@ -266,24 +256,6 @@ export function PanelSection(props: PanelSectionProps): ReactNode {
               <input type="checkbox" checked={config.includeSubagents}
                 onChange={(event) => { setConfig(previous => ({ ...previous, includeSubagents: event.target.checked })) }} />
               <span>{t('includeSubagents')}</span>
-            </label>
-            <label className={css['row']}>
-              <span>{t('historyMode')}</span>
-              <select value={config.historyMode}
-                onChange={(event) => { setConfig(previous => ({ ...previous, historyMode: event.target.value })) }}>
-                {modeOptions.map(option => (
-                  <option value={option.value} key={option.value}>{t(option.label)}</option>
-                ))}
-              </select>
-            </label>
-            <label className={css['row']}>
-              <span>{t('seedMode')}</span>
-              <select value={config.seedMode}
-                onChange={(event) => { setConfig(previous => ({ ...previous, seedMode: event.target.value })) }}>
-                {seedModeOptions.map(option => (
-                  <option value={option.value} key={option.value}>{t(option.label)}</option>
-                ))}
-              </select>
             </label>
             <div className={css['buttonsRow']}>
               <button type="button" disabled={busy} onClick={() => { void save() }}>{t('save')}</button>

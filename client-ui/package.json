@@ -1,14 +1,13 @@
 {
-  "name": "@deepseek-ai/dsh-client-ui-custom-first-control-prompt",
+  "name": "@wm-coder/dsh-client-ui-custom-first-control-prompt",
   "description": "Web panel surface for custom-first-control-prompt: composer dock request listener, settings editor, preview, and RAW patch management",
-  "version": "0.1.0-rc.6",
+  "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
-    "directory": "packages/client/ui-custom-first-control-prompt"
+    "url": "git+https://github.com/WM-CODER/custom-first-control-prompt.git"
   },
   "type": "module",
   "main": "lib/index.js",
@@ -44,34 +43,17 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-api-remotes": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-locale": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-conversation": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-settings": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-settings-plugins": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-slots": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-custom-first-control-prompt": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-typert-protocol": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-api-remotes": "0.1.x",
+    "@deepseek-ai/dsh-client-locale": "0.1.x",
+    "@deepseek-ai/dsh-client-runtime": "0.1.x",
+    "@deepseek-ai/dsh-client-ui-conversation": "0.1.x",
+    "@deepseek-ai/dsh-client-ui-settings": "0.1.x",
+    "@deepseek-ai/dsh-client-ui-settings-plugins": "0.1.x",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.x",
+    "@wm-coder/dsh-custom-first-control-prompt": "0.2.0",
+    "@deepseek-ai/dsh-typert-protocol": "0.1.x",
     "@deepseek-ai/cordis": "4.0.1",
     "react": "^18.2.0"
-  },
-  "devDependencies": {
-    "@deepseek-ai/dsh-api-remotes": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-locale": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-test-runtime": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-conversation": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-settings": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-settings-plugins": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-slots": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-custom-first-control-prompt": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-typert-protocol": "0.1.0-rc.6",
-    "@testing-library/react": "^16.1.0",
-    "@types/react": "~18.3.1",
-    "@deepseek-ai/cordis": "4.0.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
   },
   "files": [
     "lib/index.js",
@@ -79,4 +61,3 @@
     "lib/types/**/*.d.ts"
   ]
 }
-

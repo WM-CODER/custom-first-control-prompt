@@ -32,17 +32,22 @@ if (-not (Test-Path $profileDir)) {
 }
 
 # ---- junctions ----
-$nmRoot = Join-Path $profileDir 'node_modules\@deepseek-ai'
-foreach ($name in @('dsh-custom-first-control-prompt', 'dsh-client-ui-custom-first-control-prompt')) {
-  $link = Join-Path $nmRoot $name
-  if (Test-Path $link) {
-    # Directory.Delete removes the junction reparse point itself and never
-    # follows it into the target (PowerShell's Remove-Item mishandles junctions
-    # on older PS5 runtimes).
-    [System.IO.Directory]::Delete($link, $false)
-    Write-Step "junction removed: $name"
-  } else {
-    Write-Step "junction absent (skip): $name"
+# Current product scope @wm-coder, plus the legacy @deepseek-ai junctions from
+# pre-rename installs so upgrades clean up both.
+$scopes = @(
+  (Join-Path $profileDir 'node_modules\@wm-coder'),
+  (Join-Path $profileDir 'node_modules\@deepseek-ai')
+)
+foreach ($scope in $scopes) {
+  foreach ($name in @('dsh-custom-first-control-prompt', 'dsh-client-ui-custom-first-control-prompt')) {
+    $link = Join-Path $scope $name
+    if (Test-Path $link) {
+      # Directory.Delete removes the junction reparse point itself and never
+      # follows it into the target (PowerShell's Remove-Item mishandles junctions
+      # on older PS5 runtimes).
+      [System.IO.Directory]::Delete($link, $false)
+      Write-Step "junction removed: $(Join-Path (Split-Path $scope -Leaf) $name)"
+    }
   }
 }
 

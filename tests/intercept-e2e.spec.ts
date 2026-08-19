@@ -3,11 +3,9 @@ import { Context } from '@deepseek-ai/cordis'
 import AgentLoop from '@deepseek-ai/dsh-agent-loop'
 import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit'
 import { SessionId } from '@deepseek-ai/dsh-session'
-import InvariantRegistry from '@deepseek-ai/dsh-invariants'
 import { createUserMessage, LlmAdapter, type GenerateOptions, type StreamChunk } from '@deepseek-ai/dsh-llm'
 import * as CustomFirstControlPrompt from '@deepseek-ai/dsh-custom-first-control-prompt'
-import * as Companion from '@deepseek-ai/dsh-custom-first-control-prompt/invariant'
-import { hasSeededHistory, isSeededByPlugin, seededMessageSource, SEED_SOURCE } from '../src/seed.ts'
+import { SEED_SOURCE } from '../src/seed.ts'
 
 const PAIRS = [
   { user: '用户测试提示词1', assistant: '助手提示词1' },
@@ -56,19 +54,17 @@ async function drain(stream: AsyncIterable<StreamChunk>): Promise<void> {
   for await (const chunk of stream) void chunk
 }
 
-/** Mount the standard stack plus the plugin under test in intercept mode. */
+/** Mount the standard stack plus the plugin under test. */
 async function harness(adapter: CaptureAdapter, config: Record<string, unknown> = {}): Promise<Context> {
   const ctx = new Context()
   await mountAgentLoopTestDependencies(ctx)
   ctx.llm.registerAdapter(['mock'], adapter)
   await ctx.plugin(AgentLoop, { agents: [] })
-  await ctx.plugin(InvariantRegistry, { enabled: true })
-  await ctx.plugin(Companion)
-  await ctx.plugin(CustomFirstControlPrompt, { history: PAIRS, seedMode: 'intercept', ...config })
+  await ctx.plugin(CustomFirstControlPrompt, { history: PAIRS, ...config })
   return ctx
 }
 
-describe('route C: seedMode intercept', () => {
+describe('request-path seed injection', () => {
   it('prepends the reference exchanges to the conversation request without touching the session log', async () => {
     const adapter = new CaptureAdapter([textChunks('ok')])
     const ctx = await harness(adapter)
@@ -95,16 +91,17 @@ describe('route C: seedMode intercept', () => {
       expect(Object.isFrozen(request)).toBe(false)
 
       // The log carries only the real conversation: no seed messages, no extra
-      // turns, and real turn numbering starts at 1 (the route-B turn collision
-      // cannot happen — nothing was appended before the loop read its watermark).
+      // turns, and real turn numbering starts at 1 (a log-seeding design would
+      // collide turn numbers, the request path cannot).
       const session = handle.agent.session
-      expect(hasSeededHistory(session)).toBe(false)
       const userTexts = session.events
         .filter(event => event.type === 'user/message')
         .map(event => event.type === 'user/message'
           ? event.data.content.map(block => (block.type === 'text' ? block.text : '')).join('')
           : '')
       expect(userTexts).toEqual(['hello'])
+      expect(session.events.some(event =>
+        event.type === 'user/message' && event.data.source.kind === 'plugin')).toBe(false)
       expect(session.events.filter(event => event.type === 'turn/start')
         .map(event => event.type === 'turn/start' ? event.data.turn : 0)).toEqual([1])
     } finally {
@@ -120,70 +117,109 @@ describe('route C: seedMode intercept', () => {
       agentOptions: { provider: 'mock', model: 'mock' },
     })
     try {
-      handle.agent.followup(createUserMessage({ content: [{ type: 'text', text: 'first' }], source: { kind: 'user' } }))
-      await handle.agent.whenIdle()
-      handle.agent.followup(createUserMessage({ content: [{ type: 'text', text: 'second' }], source: { kind: 'user' } }))
-      await handle.agent.whenIdle()
-
+      for (const text of ['first', 'second']) {
+        handle.agent.followup(createUserMessage({
+          content: [{ type: 'text', text }],
+          source: { kind: 'user' },
+        }))
+        await handle.agent.whenIdle()
+      }
       expect(adapter.requests).toHaveLength(2)
-      // Both requests open with the same byte-identical seed prefix (the
-      // prebuilt frozen message objects are shared by reference).
-      expect(texts(adapter.requests[0]!).slice(0, 4)).toEqual([
-        '用户测试提示词1', '助手提示词1', '用户测试提示词2', '助手提示词2',
-      ])
-      expect(texts(adapter.requests[1]!).slice(0, 4)).toEqual([
-        '用户测试提示词1', '助手提示词1', '用户测试提示词2', '助手提示词2',
-      ])
-      expect(adapter.requests[1]!.messages.slice(0, 4)).toEqual(adapter.requests[0]!.messages.slice(0, 4))
+      for (const request of adapter.requests) {
+        expect(texts(request).slice(0, 4)).toEqual(['用户测试提示词1', '助手提示词1', '用户测试提示词2', '助手提示词2'])
+      }
+      expect(texts(adapter.requests[1]!).at(-1)).toBe('second')
     } finally {
       await handle.dispose()
     }
   })
 
-  it('passes auxiliary and hand-built calls straight through', async () => {
-    const adapter = new CaptureAdapter([textChunks('t'), textChunks('h')])
+  it('keeps auxiliary calls purpose-clean: session-title and compaction bypass the seeds', async () => {
+    const adapter = new CaptureAdapter([textChunks('t'), textChunks('ok')])
     const ctx = await harness(adapter)
-    // Auxiliary call: a purpose stamp must not be intercepted even with a session id.
     await drain(ctx.llm.stream({
       provider: 'mock',
       model: 'mock',
       purpose: 'session-title',
-      sessionId: SessionId('intercept-aux'),
-      messages: [createUserMessage({ content: [{ type: 'text', text: 'title me' }], source: { kind: 'user' } })],
+      messages: [createUserMessage({
+        content: [{ type: 'text', text: 'summarize' }],
+        source: { kind: 'user' },
+      })],
     }))
-    // Hand-built one-shot: no sessionId at all.
+    const handle = await ctx.agentLoop.createAgent(ctx, {
+      sessionId: SessionId('intercept-purpose'),
+      agentOptions: { provider: 'mock', model: 'mock' },
+    })
+    try {
+      handle.agent.followup(createUserMessage({
+        content: [{ type: 'text', text: 'hello' }],
+        source: { kind: 'user' },
+      }))
+      await handle.agent.whenIdle()
+      expect(adapter.requests).toHaveLength(2)
+      expect(texts(adapter.requests[0]!)).toEqual(['summarize'])
+      expect(texts(adapter.requests[1]!).length).toBe(5)
+    } finally {
+      await handle.dispose()
+    }
+  })
+
+  it('passes hand-built requests through untouched (no sessionId)', async () => {
+    const adapter = new CaptureAdapter([textChunks('x')])
+    const ctx = await harness(adapter)
     await drain(ctx.llm.stream({
       provider: 'mock',
       model: 'mock',
-      messages: [createUserMessage({ content: [{ type: 'text', text: 'one shot' }], source: { kind: 'user' } })],
+      messages: [createUserMessage({
+        content: [{ type: 'text', text: 'raw' }],
+        source: { kind: 'user' },
+      })],
     }))
-    expect(adapter.requests).toHaveLength(2)
-    expect(texts(adapter.requests[0]!)).toEqual(['title me'])
-    expect(texts(adapter.requests[1]!)).toEqual(['one shot'])
+    expect(adapter.requests).toHaveLength(1)
+    expect(texts(adapter.requests[0]!)).toEqual(['raw'])
   })
 
-  it('skips subagent-originated sessions unless the deployment opts them in', async () => {
-    const adapter = new CaptureAdapter([textChunks('ok')])
+  it('skips subagent-originated sessions unless opted in', async () => {
+    const adapter = new CaptureAdapter([textChunks('sub')])
     const ctx = await harness(adapter)
     const handle = await ctx.agentLoop.createAgent(ctx, {
-      sessionId: SessionId('intercept-sub'),
+      sessionId: SessionId('intercept-subagent'),
       agentOptions: { provider: 'mock', model: 'mock' },
       meta: { origin: 'subagent' },
     })
     try {
       handle.agent.followup(createUserMessage({
-        content: [{ type: 'text', text: 'sub hello' }],
+        content: [{ type: 'text', text: 'delegate' }],
         source: { kind: 'user' },
       }))
       await handle.agent.whenIdle()
       expect(adapter.requests).toHaveLength(1)
-      expect(texts(adapter.requests[0]!)).toEqual(['sub hello'])
+      expect(texts(adapter.requests[0]!)).toEqual(['delegate'])
     } finally {
       await handle.dispose()
     }
+
+    const adapter2 = new CaptureAdapter([textChunks('sub-ok')])
+    const ctx2 = await harness(adapter2, { includeSubagents: true })
+    const handle2 = await ctx2.agentLoop.createAgent(ctx2, {
+      sessionId: SessionId('intercept-subagent-optin'),
+      agentOptions: { provider: 'mock', model: 'mock' },
+      meta: { origin: 'subagent' },
+    })
+    try {
+      handle2.agent.followup(createUserMessage({
+        content: [{ type: 'text', text: 'delegate' }],
+        source: { kind: 'user' },
+      }))
+      await handle2.agent.whenIdle()
+      expect(adapter2.requests).toHaveLength(1)
+      expect(texts(adapter2.requests[0]!).length).toBe(5)
+    } finally {
+      await handle2.dispose()
+    }
   })
 
-  it('forks cleanly: the log carries no plugin messages, so no seed-boundary rule applies', async () => {
+  it('a fork of a seeded session is an ordinary conversation copy', async () => {
     const adapter = new CaptureAdapter([textChunks('ok')])
     const ctx = await harness(adapter)
     const handle = await ctx.agentLoop.createAgent(ctx, {
@@ -191,14 +227,16 @@ describe('route C: seedMode intercept', () => {
       agentOptions: { provider: 'mock', model: 'mock' },
     })
     try {
-      handle.agent.followup(createUserMessage({ content: [{ type: 'text', text: 'hello' }], source: { kind: 'user' } }))
+      handle.agent.followup(createUserMessage({
+        content: [{ type: 'text', text: 'hello' }],
+        source: { kind: 'user' },
+      }))
       await handle.agent.whenIdle()
-      // Route B fails here on unpatched frameworks (the fork prefix re-enters
-      // the seed boundary, which rejects plugin-source assistant messages).
-      // Route C logs no plugin messages, so the fork is an ordinary copy.
+      // The log carries no plugin-attributed messages, so the fork is an
+      // ordinary copy: no seed boundary applies and the fork is clean.
       const forked = ctx.sessions.fork(handle.agent.session)
-      expect(hasSeededHistory(forked)).toBe(false)
-      expect(forked.events.filter(event => isSeededByPlugin(seededMessageSource(event)))).toHaveLength(0)
+      expect(forked.events.some(event =>
+        event.type === 'user/message' && event.data.source.kind === 'plugin')).toBe(false)
     } finally {
       await handle.dispose()
     }

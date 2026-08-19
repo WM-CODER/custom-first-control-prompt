@@ -5,7 +5,7 @@
 // the remote.custom-first-control-prompt-panel capability. The api-remotes
 // assembly list only covers the core namespaces, so a third-party namespace
 // must mount itself; otherwise the entry stays pending forever.
-import TYPERT_REMOTE from '@deepseek-ai/dsh-custom-first-control-prompt/remote';
+import TYPERT_REMOTE from '@wm-coder/dsh-custom-first-control-prompt/remote';
 import { en, zh } from "./locales.js";
 import { createPanelActions } from "./actions.js";
 import { PanelSection } from "./PanelSection.js";

@@ -35,10 +35,6 @@ export interface PanelConfigView {
   history: PanelPairView[]
   /** Whether subagent-originated sessions are opted in. */
   includeSubagents: boolean
-  /** Reference-history application mode. */
-  historyMode: string
-  /** Conversational-seed mechanism: 'hook' (route A) | 'append' (route B, default) | 'intercept' (route C). */
-  seedMode: string
 }
 
 /** Result of reading the profile patch entry. */
@@ -81,8 +77,8 @@ export interface PanelRequestView {
   system: string
   /**
    * Call purpose when the request carried one (e.g. `session-title`,
-   * `compaction`); empty for ordinary conversation requests. Conversation
-   * requests are the ones seed injection (route C) applies to.
+   * `compaction`); empty for ordinary conversation requests, which are the
+   * ones seed injection applies to.
    */
   purpose: string
   /** Plaintext message list. */

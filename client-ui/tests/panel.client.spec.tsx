@@ -43,8 +43,6 @@ function configRead(): PanelConfigReadResult {
     sections: [{ name: 'rules', order: 0, text: 'be brief', enabled: true }],
     history: [{ user: 'u', assistant: 'a' }],
     includeSubagents: false,
-    historyMode: 'reapply',
-    seedMode: 'hook',
   }
   return { ok: true, path: '/profiles/web/cordis.patch.yml', raw: '- insert: []', parsed, error: '' }
 }

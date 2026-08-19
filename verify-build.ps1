@@ -55,24 +55,18 @@ Check 'entry import smoke' {
   if ($LASTEXITCODE -ne 0) { throw ($out -join ' ') }
 }
 
-# 4) seed assistant events carry turn/step (frontend renderer depends on it).
-#    Check the chunk index.js actually imports, not an arbitrary seed-* file
-#    (stale chunks pile up because clean stays off).
-Check 'seed assistant events have turn/step' {
+# 4) request-path injection present: index.js must inline the seed builder and
+#    the plugin attribution (the C-only bundle carries no seed chunk anymore).
+Check 'index.js inlines buildSeedMessages + SEED_SOURCE' {
   $index = Join-Path $Lib 'index.js'
-  $ref = Select-String -Path $index -Pattern 'seed-[A-Za-z0-9_]+\.js' | Select-Object -First 1
-  if (-not $ref) { throw 'index.js does not import a seed chunk' }
-  $chunkName = $ref.Matches.Value
-  $chunk = Join-Path $Lib $chunkName
-  if (-not (Test-Path $chunk)) { throw "referenced chunk missing: $chunkName" }
-  $c = Get-Content $chunk -Raw
-  if ($c -notmatch 'assistantData = \{\s*turn,') { throw "$chunkName assistantData missing turn" }
-  if ($c -notmatch 'turn,\s*step,') { throw "$chunkName assistantData missing step" }
+  $c = Get-Content $index -Raw
+  if ($c -notmatch 'buildSeedMessages') { throw 'index.js has no buildSeedMessages' }
+  if ($c -notmatch 'custom-first-control-prompt') { throw 'index.js has no SEED_SOURCE string' }
 }
 
 # 4b) no stale seed chunks: every lib/seed-*.js must be imported by index.js
 #     or invariant.js. tsdown keeps clean off, so stale chunks pile up across
-#     rebuilds, and files: ["lib/seed-*.js"] would publish them all.
+#     rebuilds (the current self-contained build usually emits none).
 Check 'no stale seed chunks' {
   $imports = @()
   foreach ($f in @('index.js', 'invariant.js')) {
@@ -95,7 +89,9 @@ Check 'typert artifacts present' {
 }
 
 if ($Full) {
-  # 6) test-home E2E: boot web, create a session via API, verify seed shape
+  # 6) test-home E2E: boot web and create a session. The seed messages live on
+  #    the request path only, so the fresh log must carry NO plugin-attributed
+  #    messages (verifying injection itself requires the panel LLM listener).
   Check 'test-home E2E' {
     if (-not (Test-Path $TestHome)) { throw "test home missing: $TestHome" }
     $port = 3096
@@ -123,16 +119,7 @@ if ($Full) {
       $json = $r.Content | ConvertFrom-Json
       if ($json.result.ok -ne $true) { throw "session.create failed: $($json.result.error.message)" }
       $sid = $json.result.value.sessionId
-
-      $hist = @{ type = 'client-request'; rpcId = 'verify-2'; method = 'session.history'; payload = @{ sessionId = $sid } } | ConvertTo-Json -Depth 5
-      $r2 = Invoke-WebRequest -Uri "http://127.0.0.1:$port/api/session.history" -Method Post -ContentType 'application/json' -Body $hist -UseBasicParsing -TimeoutSec 30
-      $j2 = $r2.Content | ConvertFrom-Json
-      $assistant = $j2.result.value.events | Where-Object { $_.event.type -eq 'assistant/message' } | Select-Object -First 1
-      if (-not $assistant) { throw 'new session has no assistant/message (seed not applied)' }
-      if ($null -eq $assistant.event.data.turn -or $null -eq $assistant.event.data.step) {
-        throw 'assistant/message missing turn/step (frontend would crash)'
-      }
-      Write-Output "      seed verified: assistant turn=$($assistant.event.data.turn) step=$($assistant.event.data.step)"
+      Write-Output "      session created: $sid (log carries no seed by design)"
     } finally {
       Stop-Job $job -ErrorAction SilentlyContinue
       Remove-Job $job -Force -ErrorAction SilentlyContinue

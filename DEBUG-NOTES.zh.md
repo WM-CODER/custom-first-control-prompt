@@ -5,6 +5,11 @@
 > **隐私约定**：所有路径均为占位符（`<DSH_HOME>`、`<folder>`、`<repo>`、`<workspace>`、
 > `<session-id>`），不含任何机器的用户名、绝对路径、凭据或真实会话标识；经此文件换机器照抄
 > 不会泄漏本机信息。
+>
+> **现状（v3，2026-08-19）**：插件已收敛为**单一注入机制**——`llm/stream` 请求路径拦截
+> （原「路线 C」即插件本体），包名 `@wm-coder/*`，`seedMode`/`historyMode` 配置与
+> A/B 路线、框架补丁全部移除。下文历史章节中的路线讨论（A=hook / B=append / C=intercept）
+> 均为**当时的实测记录**，机制结论仍有效，配置键已不存在。
 
 ## 0. 铁律（先读）
 
@@ -14,6 +19,55 @@
   2. 排障优先在**独立测试 home** 上复现，确认无误再同步到正式部署。
 - 恢复顺序：屏蔽插件行（`<DSH_HOME>/profiles/web/cordis.patch.yml` 删除该 `insert` 或加
   `disabled: true`）→ `web-safe` 逃生 profile 重启 → 修产物后回归。
+
+## 0.3 Changelog 2026-08-19：C-only 收敛 + 进入插件生态
+
+**收敛决策**：只保留请求路径注入（原 C 路线）作为插件本体；移除 `seedMode`（三路线
+选择器）、`historyMode`、`reapplyAfterCompaction` 配置与 A（hook）/B（append）实现、
+`patches/` 框架补丁、`PLAN-A-REVISED.md`、`profile-web.patch.yml`。`invariant.ts`
+改为空伴生（请求路径零日志写入，无可校验对象；保留文件仅为满足构建工厂的测试伴生
+制度）。面板设置页移除两个模式下拉。
+
+**生态合规**（独立插件产品定位）：
+- 包名 `@deepseek-ai/dsh-*` → `@wm-coder/dsh-*`（核心 + 面板），不再冒用官方 scope；
+  框架依赖（`@deepseek-ai/dsh-llm` 等官方包）的 peer 引用保持不变。
+- `repository` 指向本仓库（原指 deepseek-harness 官方仓库，会误导归属）；
+  新增 MIT `LICENSE`；版本 0.1.0-rc.6 → 0.2.0（配置字段删除属破坏性变更）。
+- **构建流水线**：构建工厂（harness 仓库内副本）保持 `@deepseek-ai` 工厂名（workspace
+  约束强制 release member 指向官方仓库），产物镜像到分发目录后**字符串重写**为产品名
+  （21 个 js/d.ts：`client.js` 的运行时 `remote` 导入、d.ts 类型声明、patch 行渲染字符串），
+  与 sourcemap 本机路径清洗同一模式。uninstall.ps1 兼容清理新旧两个 scope 的 junction。
+- 升级注意：junction 目标 scope 变为 `node_modules\@wm-coder\`，patch 行 `name` 同步改；
+  旧安装先 `uninstall.ps1`（双向清理）再 `install.ps1`。
+
+## 0.2 Changelog 2026-08-19：面板「第一条消息看不到注入请求」定论 + dock 完整列表
+
+**现象**：用户开监听后发第一条真实消息，面板只看到 `#2 [session-title]`（无注入），
+看不到带注入的对话请求；第二条消息起才看到 `#3`（带注入）。**模型侧注入一直正常**
+（模型回复能引用种子内容）。
+
+**排查过程（三轮）**：
+1. 第一轮误判为 session-title 干扰 → 加 `purpose` 字段区分请求（保留为正式能力）；
+2. 第二轮加服务端 waterfall trace（临时 `src/trace.ts`，写 `~/.dsh/logs/cfcp-trace.log`）
+   证明 **#1 对话请求确实进了 ring**（entry=1, msgs=7, seed 标记为真）——采集层无丢失；
+3. 第三轮锁定 UI 缺陷：dock 展开区**只渲染 latest 一条**请求，而 #1（对话+注入）与
+   #2（title）相隔仅 2ms，latest 永远是 #2，#1 被 UI 折叠遮蔽。
+
+**修复**：`Dock.tsx` 展开区从单条改为**完整请求列表**（`requests.map`，每条一行、
+最新默认展开 `open={request === latest}`）；行内显示 `#序号 · [purpose] 模型 · 消息数 · 时间`。
+临时 trace 在验证通过后已全部移除。
+
+**派生结论（设计行为，非 bug）**：`[session-title]` 辅助请求**不含**注入是正确行为
+（`purpose !== undefined` 即放行）——避免污染标题生成与浪费 token。首条消息触发
+「对话 + title」两个请求，面板应看到两个条目，只有对话那条带注入。
+
+**构建坑（重要，构建产物相关）**：per-package `pnpm exec tsdown`（entry 指向 `src/`）
+会绕过根 workspace 构建的装饰器 lowering，产出**裸 `@Remote(`** 的 `lib/index.js`
+（Node 无法解析，web 起不来）——这正是 §1.1 记录的坑。**正确构建方式**：仓库根
+`pnpm run build:lib:host`（tsc + tsdown workspace 模式 + typertPlugin）。
+构建后必须跑 `verify-build.ps1` 门禁（本次正是门禁 #2「无裸 @Remote」拦住了坏产物），
+并删除未被 index.js 引用的 stale `seed-*.js` chunk（`clean: false` 堆积；C-only 后
+bundle 自包含，通常无 chunk）。
 
 ## 0.1 Changelog 2026-08-18：C 路线（`seedMode: "intercept"`）落地 + B 路线根因定论
 
