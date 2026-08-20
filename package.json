@@ -1,7 +1,7 @@
 {
   "name": "@wm-coders/dsh-custom-first-control-prompt",
   "description": "Deployment-configured prompt prefix for DeepSeek Harness: ordered system-prompt sections ahead of the persona and reference user/assistant exchanges injected into every ordinary conversation request as real alternating messages (request-path interception, zero session-log writes).",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publishConfig": {
     "access": "public"
   },
@@ -46,6 +46,9 @@
     "lib/*.d.ts.map"
   ],
   "license": "MIT",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
   "dependencies": {
     "@deepseek-ai/schemastery": "3.18.1",
     "zod": "^4.4.3"

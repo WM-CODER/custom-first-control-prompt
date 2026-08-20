@@ -1,7 +1,7 @@
 {
   "name": "@wm-coders/dsh-client-ui-custom-first-control-prompt",
   "description": "Web panel surface for custom-first-control-prompt: composer dock request listener, settings editor, preview, and RAW patch management",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publishConfig": {
     "access": "public"
   },
@@ -42,6 +42,9 @@
     "watch": "tsdown --watch"
   },
   "license": "MIT",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
   "peerDependencies": {
     "@deepseek-ai/dsh-api-remotes": "0.1.x",
     "@deepseek-ai/dsh-client-locale": "0.1.x",
@@ -50,7 +53,7 @@
     "@deepseek-ai/dsh-client-ui-settings": "0.1.x",
     "@deepseek-ai/dsh-client-ui-settings-plugins": "0.1.x",
     "@deepseek-ai/dsh-client-ui-slots": "0.1.x",
-    "@wm-coders/dsh-custom-first-control-prompt": "0.2.0",
+    "@wm-coders/dsh-custom-first-control-prompt": "0.2.1",
     "@deepseek-ai/dsh-typert-protocol": "0.1.x",
     "@deepseek-ai/cordis": "4.0.1",
     "react": "^18.2.0"
