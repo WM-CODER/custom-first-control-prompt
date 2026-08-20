@@ -4,6 +4,27 @@
 
 部署方配置的提示词前缀。有序的系统提示词段渲染在部署 persona 之前，配置的 user/assistant 参考对话被注入到**每一个普通对话请求**中——作为真实的交替 user/assistant 消息前置在请求路径上（`llm/stream` 请求拦截，会话日志零写入）。静态内容在每次请求中逐字节一致地渲染，从而保持前缀缓存复用。
 
+## 安装
+
+```bash
+# 从 GitHub 安装（推荐 — 构建产物已提交，无需构建审批）
+dsh plugin --profile web add github:WM-CODER/custom-first-control-prompt
+
+# 从 npm 安装
+dsh plugin --profile web add @wm-coder/dsh-custom-first-control-prompt
+
+# 从本地目录安装（开发用）
+dsh plugin --profile web add ./path/to/custom-first-control-prompt
+```
+
+安装后重启 web 应用（`dsh --profile web` 或运行 `restart-web.ps1` / `restart-web.sh`）。
+
+卸载：
+
+```bash
+dsh plugin --profile web remove @wm-coder/dsh-custom-first-control-prompt
+```
+
 > 安装 / 部署 / 调试中遇到过的阻碍与测试方法见
 > [DEBUG-NOTES.zh.md](DEBUG-NOTES.zh.md)（web fail-loud 根因、同 id 重复 insert、
 > API 验证链路等，路径全部脱敏）；一键安装见 [INSTALL.md](INSTALL.md)；
