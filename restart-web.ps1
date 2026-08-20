@@ -61,6 +61,6 @@ for ($i = 0; $i -lt 45; $i++) {
 if (-not $ok) {
   Log "FAILED: web did not become healthy within 90s. stderr tail:"
   Get-Content $errLog -Tail 30 -ErrorAction SilentlyContinue | ForEach-Object { Log "  $_" }
-  Log "If the failure is plugin/framework related, run escape.ps1 then retry."
+  Log "If the failure is plugin related, run escape.ps1 then retry."
 }
 Log "DONE. log=$log"

@@ -4,7 +4,7 @@
  * ring of real model requests, and exposes the whole surface to the browser
  * half through Typert Remote methods.
  *
- * @module @deepseek-ai/dsh-custom-first-control-prompt/panel
+ * @module @wm-coder/dsh-custom-first-control-prompt/panel
  */
 import type { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
@@ -184,7 +184,7 @@ export class PanelService extends TypertRemoteService {
       ? history.map(p => `          - user: ${PanelService.yamlScalar(p.user)}\n            assistant: ${PanelService.yamlScalar(p.assistant)}`).join('\n')
       : ''
     return '    - id: custom-first-control-prompt\n'
-      + "      name: '@deepseek-ai/dsh-custom-first-control-prompt'\n"
+      + "      name: '@wm-coder/dsh-custom-first-control-prompt'\n"
       + '      config:\n'
       + (sections.length > 0 ? `        sections:\n${secBlock}\n` : '        sections: []\n')
       + (history.length > 0 ? `        history:\n${hisBlock}\n` : '        history: []\n')

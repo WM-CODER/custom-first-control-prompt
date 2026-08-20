@@ -9,7 +9,7 @@
  * content renders byte-identically on every request, preserving prefix-cache
  * reuse.
  *
- * @module @deepseek-ai/dsh-custom-first-control-prompt
+ * @module @wm-coder/dsh-custom-first-control-prompt
  */
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'

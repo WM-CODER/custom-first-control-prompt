@@ -3,12 +3,12 @@
  * Typert Remote namespace `custom-first-control-prompt-panel`. Every method
  * resolves to a `RemoteResult`; callers unwrap it (no carrier rejection).
  *
- * @module @deepseek-ai/dsh-client-ui-custom-first-control-prompt/actions
+ * @module @wm-coder/dsh-client-ui-custom-first-control-prompt/actions
  */
 import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
 // Type-only: pulls the Host panel service's Remote namespace merge so the
 // generated namespace face type below resolves.
-import type {} from '@deepseek-ai/dsh-custom-first-control-prompt/remote'
+import type {} from '@wm-coder/dsh-custom-first-control-prompt/remote'
 import type { RemoteFailure, RemoteResult, TypertRemoteNamespaceMap } from '@deepseek-ai/dsh-typert-protocol'
 import type {
   PanelAssembleResult,
@@ -16,7 +16,7 @@ import type {
   PanelConfigView,
   PanelRequestsView,
   PanelWriteResult,
-} from '@deepseek-ai/dsh-custom-first-control-prompt/client'
+} from '@wm-coder/dsh-custom-first-control-prompt/client'
 
 /** The generated namespace face: the `remote.<namespace>` Cordis child service's methods. */
 type PanelRemoteFace = TypertRemoteNamespaceMap['custom-first-control-prompt-panel']
