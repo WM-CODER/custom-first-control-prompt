@@ -18,7 +18,7 @@ interface HistoryPair {
  * Wire types shared by the web panel's Host service and browser half. Every
  * value crosses the Typert Remote boundary and must stay lossless-JSON.
  *
- * @module @wm-coder/dsh-custom-first-control-prompt/panel-types
+ * @module @wm-coders/dsh-custom-first-control-prompt/panel-types
  */
 /** One configured system-prompt section as the panel shows it. */
 interface PanelSectionView {

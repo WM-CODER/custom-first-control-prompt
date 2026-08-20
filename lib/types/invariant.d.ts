@@ -1,4 +1,4 @@
-/** Package-owned invariant companion. @module @wm-coder/dsh-custom-first-control-prompt/invariant */
+/** Package-owned invariant companion. @module @wm-coders/dsh-custom-first-control-prompt/invariant */
 import type { Context } from '@deepseek-ai/cordis';
 /** Cordis companion plugin name. */
 export declare const name = "custom-first-control-prompt-invariant";

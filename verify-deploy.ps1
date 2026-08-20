@@ -54,7 +54,7 @@ $resolve = ''
 $code = 1
 if (Test-Path $profileDir) {
   Push-Location $profileDir
-  $resolve = node -e "import('@wm-coder/dsh-custom-first-control-prompt').then(m => { const p = m.default ?? m; console.log('keys=' + Object.keys(p).sort().join(',') + ';hasConfig=' + !!(p.Config && p.Config['~standard'])) }).catch(e => { console.error(e.message); process.exit(1) })" 2>&1 | Out-String
+  $resolve = node -e "import('@wm-coders/dsh-custom-first-control-prompt').then(m => { const p = m.default ?? m; console.log('keys=' + Object.keys(p).sort().join(',') + ';hasConfig=' + !!(p.Config && p.Config['~standard'])) }).catch(e => { console.error(e.message); process.exit(1) })" 2>&1 | Out-String
   $code = $LASTEXITCODE
   Pop-Location
 }
@@ -75,7 +75,7 @@ Check "composition has core row" ($dump -match '(?m)- id: custom-first-control-p
 Check "composition has panel row" ($dump -match '(?m)- id: ui-custom-first-control-prompt') "" "panel row missing: same layer as the core row (bundle patch or offline profile rows)"
 $profilePkg = Join-Path $profileDir 'package.json'
 if (Test-Path $profilePkg) {
-  $managed = (Get-Content $profilePkg -Raw) -match '@wm-coder/dsh-custom-first-control-prompt'
+  $managed = (Get-Content $profilePkg -Raw) -match '@wm-coders/dsh-custom-first-control-prompt'
   if ($managed) {
     Write-Host "         install mode: official (dsh plugin add, bundle layer active)"
   } else {
@@ -92,7 +92,7 @@ try {
 }
 
 try {
-  $b = Invoke-WebRequest -Uri "$base/plugins/@wm-coder/dsh-client-ui-custom-first-control-prompt/client.js" -UseBasicParsing -TimeoutSec 10
+  $b = Invoke-WebRequest -Uri "$base/plugins/@wm-coders/dsh-client-ui-custom-first-control-prompt/client.js" -UseBasicParsing -TimeoutSec 10
   Check "panel bundle route 200" ($b.StatusCode -eq 200) "HTTP $($b.StatusCode)" "panel package/junction intact?"
 } catch {
   Check "panel bundle route 200" $false ($_.Exception.Message) "panel row/package issue"

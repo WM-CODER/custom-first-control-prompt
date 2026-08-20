@@ -65,7 +65,7 @@ check "composition has panel row" bash -c "
 
 # 5) install mode: official (dsh plugin add) vs junction
 profile_pkg="$profile_dir/package.json"
-if [[ -f "$profile_pkg" ]] && grep -q '@wm-coder/dsh-custom-first-control-prompt' "$profile_pkg"; then
+if [[ -f "$profile_pkg" ]] && grep -q '@wm-coders/dsh-custom-first-control-prompt' "$profile_pkg"; then
   echo "PASS  install mode: official (dsh plugin add)"
   ((pass++))
 else

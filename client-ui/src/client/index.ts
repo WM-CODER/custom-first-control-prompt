@@ -5,7 +5,7 @@
  * panel service through its Typert Remote namespace. This package owns no
  * business state: every value arrives from the Host service.
  *
- * @module @wm-coder/dsh-client-ui-custom-first-control-prompt/client
+ * @module @wm-coders/dsh-client-ui-custom-first-control-prompt/client
  */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
@@ -25,7 +25,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
 // the remote.custom-first-control-prompt-panel capability. The api-remotes
 // assembly list only covers the core namespaces, so a third-party namespace
 // must mount itself; otherwise the entry stays pending forever.
-import TYPERT_REMOTE from '@wm-coder/dsh-custom-first-control-prompt/remote'
+import TYPERT_REMOTE from '@wm-coders/dsh-custom-first-control-prompt/remote'
 import type { TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
 import { en, zh, type CfcpKey } from './locales.ts'
 import { createPanelActions, type PanelActions } from './actions.ts'

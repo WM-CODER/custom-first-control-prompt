@@ -42,14 +42,14 @@ fi
 # ---- official removal (only when the packages are pnpm-managed deps) ----
 managed=false
 profile_pkg="$profile_dir/package.json"
-if [[ -f "$profile_pkg" ]] && grep -q '@wm-coder/dsh-custom-first-control-prompt' "$profile_pkg"; then
+if [[ -f "$profile_pkg" ]] && grep -q '@wm-coders/dsh-custom-first-control-prompt' "$profile_pkg"; then
   managed=true
 fi
 dsh_bin="$dsh_home/profiles/node_modules/@deepseek-ai/dsh/lib/bin.js"
 if [[ "$managed" == true && -f "$dsh_bin" ]]; then
   if node "$dsh_bin" plugin --profile "$profile_name" remove \
-      '@wm-coder/dsh-custom-first-control-prompt' \
-      '@wm-coder/dsh-client-ui-custom-first-control-prompt' 2>/dev/null; then
+      '@wm-coders/dsh-custom-first-control-prompt' \
+      '@wm-coders/dsh-client-ui-custom-first-control-prompt' 2>/dev/null; then
     echo "== dsh plugin remove done (deps + bundle layer)"
   else
     echo "== dsh plugin remove exited non-zero (continuing with symlink cleanup)"

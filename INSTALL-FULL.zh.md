@@ -8,7 +8,7 @@
 > `INSTALL.md` 是通用手册。两处不一致时，以**各自机器上的实测为准**（框架/部署
 > 版本不同行为可能不同），差异点已在「§8 反馈清单」列出。
 > **v3 相对 v2**：插件收敛为**单一注入机制**（原 Route C 即插件本体，包名改为
-> `@wm-coder/*`，移除 seedMode/historyMode 配置与 A/B 路线及框架补丁流程）；
+> `@wm-coders/*`，移除 seedMode/historyMode 配置与 A/B 路线及框架补丁流程）；
 > v2 的三路线实测记录保留在 §8 反馈清单中作为历史。
 
 ## 0. 概念与机制
@@ -81,7 +81,7 @@ New-Item -ItemType Junction -Path "$dir\dsh-client-ui-custom-first-control-promp
 ```yaml
 - insert:
     - id: custom-first-control-prompt
-      name: '@wm-coder/dsh-custom-first-control-prompt'
+      name: '@wm-coders/dsh-custom-first-control-prompt'
       config:
         sections:
           - name: "system"
@@ -96,7 +96,7 @@ New-Item -ItemType Junction -Path "$dir\dsh-client-ui-custom-first-control-promp
 
     # 面板客户端行
     - id: ui-custom-first-control-prompt
-      name: '@wm-coder/dsh-client-ui-custom-first-control-prompt'
+      name: '@wm-coders/dsh-client-ui-custom-first-control-prompt'
 ```
 
 > **样例提示词一律用中性占位文本**（如 `system 01` / `user01/assist01`）——
@@ -138,12 +138,12 @@ powershell -ExecutionPolicy Bypass -File "<插件目录>\verify-deploy.ps1"
 由 A3 第二行自带。面板行存在且 **web 运行的是当前插件版本**后，
 **浏览器刷新（F5）**即可见：
 - 设置 → 「自定义优先控制提示词」页面（预览/配置编辑/RAW/LLM 监听）
-- 设置 → 插件 → `@wm-coder/dsh-custom-first-control-prompt` 卡片（两个开关）
+- 设置 → 插件 → `@wm-coders/dsh-custom-first-control-prompt` 卡片（两个开关）
 - 对话输入框上方「自定义提示词」条（监听默认关闭）
 
 验证：`Invoke-WebRequest http://127.0.0.1:3080/` 的 HTML 应含
 `dsh-client-ui-custom-first-control-prompt`（boot manifest）；面板 bundle 路由应 200：
-`/plugins/@wm-coder/dsh-client-ui-custom-first-control-prompt/client.js`。
+`/plugins/@wm-coders/dsh-client-ui-custom-first-control-prompt/client.js`。
 
 > **硬纪律（本机实测踩过）**：**更新插件目录（git fetch/reset）后，运行中的 web
 > 进程仍加载旧插件代码（Node ESM 模块缓存）**——目录更新 ≠ 进程生效。

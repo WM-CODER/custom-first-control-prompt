@@ -7,7 +7,7 @@
 > 不会泄漏本机信息。
 >
 > **现状（v3，2026-08-19）**：插件已收敛为**单一注入机制**——`llm/stream` 请求路径拦截
-> （原「路线 C」即插件本体），包名 `@wm-coder/*`，`seedMode`/`historyMode` 配置与
+> （原「路线 C」即插件本体），包名 `@wm-coders/*`，`seedMode`/`historyMode` 配置与
 > A/B 路线、框架补丁全部移除。下文历史章节中的路线讨论（A=hook / B=append / C=intercept）
 > 均为**当时的实测记录**，机制结论仍有效，配置键已不存在。
 
@@ -62,7 +62,7 @@ web fail-loud）。官方机制（`docs/user/develop/basic/publish.md` + apps/cl
 制度）。面板设置页移除两个模式下拉。
 
 **生态合规**（独立插件产品定位）：
-- 包名 `@deepseek-ai/dsh-*` → `@wm-coder/dsh-*`（核心 + 面板），不再冒用官方 scope；
+- 包名 `@deepseek-ai/dsh-*` → `@wm-coders/dsh-*`（核心 + 面板），不再冒用官方 scope；
   框架依赖（`@deepseek-ai/dsh-llm` 等官方包）的 peer 引用保持不变。
 - `repository` 指向本仓库（原指 deepseek-harness 官方仓库，会误导归属）；
   新增 MIT `LICENSE`；版本 0.1.0-rc.6 → 0.2.0（配置字段删除属破坏性变更）。

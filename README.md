@@ -1,4 +1,4 @@
-# @wm-coder/dsh-custom-first-control-prompt
+# @wm-coders/dsh-custom-first-control-prompt
 
 English | [中文](README.zh.md)
 
@@ -11,7 +11,7 @@ Deployment-configured prompt prefix. Ordered system-prompt sections render ahead
 dsh plugin --profile web add github:WM-CODER/custom-first-control-prompt
 
 # From npm
-dsh plugin --profile web add @wm-coder/dsh-custom-first-control-prompt
+dsh plugin --profile web add @wm-coders/dsh-custom-first-control-prompt
 
 # From local directory (development)
 dsh plugin --profile web add ./path/to/custom-first-control-prompt
@@ -22,7 +22,7 @@ After installation, restart the web app (`dsh --profile web` or run `restart-web
 To uninstall:
 
 ```bash
-dsh plugin --profile web remove @wm-coder/dsh-custom-first-control-prompt
+dsh plugin --profile web remove @wm-coders/dsh-custom-first-control-prompt
 ```
 
 > Install / deployment / debugging obstacles and test methods: [DEBUG-NOTES.zh.md](DEBUG-NOTES.zh.md) (in Chinese; web fail-loud root causes, duplicate-id inserts, API verification chains — all paths scrubbed). One-command install: [INSTALL.md](INSTALL.md). Full cross-machine walkthrough: [INSTALL-FULL.zh.md](INSTALL-FULL.zh.md) (Chinese).
@@ -31,7 +31,7 @@ dsh plugin --profile web remove @wm-coder/dsh-custom-first-control-prompt
 
 ```yaml
 - id: custom-first-control-prompt
-  name: '@wm-coder/dsh-custom-first-control-prompt'
+  name: '@wm-coders/dsh-custom-first-control-prompt'
   config:
     sections:
       - name: house-rules

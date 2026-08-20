@@ -122,7 +122,7 @@ else
 
 - insert:
     - id: custom-first-control-prompt
-      name: '@wm-coder/dsh-custom-first-control-prompt'
+      name: '@wm-coders/dsh-custom-first-control-prompt'
       config:
         sections:
           - name: "system"
@@ -136,7 +136,7 @@ else
         includeSubagents: false
 
     - id: ui-custom-first-control-prompt
-      name: '@wm-coder/dsh-client-ui-custom-first-control-prompt'
+      name: '@wm-coders/dsh-client-ui-custom-first-control-prompt'
 YAML
 )
     existing=""

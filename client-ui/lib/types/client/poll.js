@@ -3,7 +3,7 @@
  * carried as state (never thrown). Used by the dock, the plugin card, and
  * the LLM-listening tab.
  *
- * @module @wm-coder/dsh-client-ui-custom-first-control-prompt/poll
+ * @module @wm-coders/dsh-client-ui-custom-first-control-prompt/poll
  */
 import { useEffect, useState } from 'react';
 /** Poll interval for the request ring. */

@@ -1,4 +1,4 @@
-# @wm-coder/dsh-client-ui-custom-first-control-prompt
+# @wm-coders/dsh-client-ui-custom-first-control-prompt
 
 `custom-first-control-prompt` 核心插件的网页面板界面。本包是面板的**浏览器半边**：只负责 UI，不持有任何业务状态。所有数据——profile patch 配置、捕获的请求环形缓冲、dock 可见性——都存放在宿主端的 `PanelService` 中，通过 Typert Remote 命名空间 `custom-first-control-prompt-panel` 传输。
 

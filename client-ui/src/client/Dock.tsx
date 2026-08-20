@@ -8,7 +8,7 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { SessionId } from '@deepseek-ai/dsh-client-runtime/client'
-import type { PanelRequestView } from '@wm-coder/dsh-custom-first-control-prompt/client'
+import type { PanelRequestView } from '@wm-coders/dsh-custom-first-control-prompt/client'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { PanelActions } from './actions.ts'
 import { useRequestsPoll } from './poll.ts'

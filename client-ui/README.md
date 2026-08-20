@@ -1,4 +1,4 @@
-# @wm-coder/dsh-client-ui-custom-first-control-prompt
+# @wm-coders/dsh-client-ui-custom-first-control-prompt
 
 Web panel surface for the `custom-first-control-prompt` core plugin. This package is the **browser half** of the panel: it owns UI only, never business state. Every value — the profile patch config, the captured request ring, the dock visibility — lives in the Host `PanelService` and crosses the Typert Remote namespace `custom-first-control-prompt-panel`.
 

@@ -40,14 +40,14 @@ if (-not (Test-Path $profileDir)) {
 $managed = $false
 $profilePkg = Join-Path $profileDir 'package.json'
 if (Test-Path $profilePkg) {
-  $managed = (Get-Content $profilePkg -Raw) -match '@wm-coder/dsh-custom-first-control-prompt'
+  $managed = (Get-Content $profilePkg -Raw) -match '@wm-coders/dsh-custom-first-control-prompt'
 }
 $dshBin = Join-Path $DshHome 'profiles\node_modules\@deepseek-ai\dsh\lib\bin.js'
 if ($managed -and (Test-Path $dshBin)) {
   $prev = $ErrorActionPreference
   $ErrorActionPreference = 'Continue'
   try {
-    $null = & node $dshBin plugin --profile $ProfileName remove '@wm-coder/dsh-custom-first-control-prompt' '@wm-coder/dsh-client-ui-custom-first-control-prompt' 2>$null
+    $null = & node $dshBin plugin --profile $ProfileName remove '@wm-coders/dsh-custom-first-control-prompt' '@wm-coders/dsh-client-ui-custom-first-control-prompt' 2>$null
     if ($LASTEXITCODE -eq 0) {
       Write-Step 'dsh plugin remove done (deps + bundle layer)'
     } else {

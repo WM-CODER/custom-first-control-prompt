@@ -1,4 +1,4 @@
-# @wm-coder/dsh-custom-first-control-prompt
+# @wm-coders/dsh-custom-first-control-prompt
 
 [English](README.md) | 中文
 
@@ -11,7 +11,7 @@
 dsh plugin --profile web add github:WM-CODER/custom-first-control-prompt
 
 # 从 npm 安装
-dsh plugin --profile web add @wm-coder/dsh-custom-first-control-prompt
+dsh plugin --profile web add @wm-coders/dsh-custom-first-control-prompt
 
 # 从本地目录安装（开发用）
 dsh plugin --profile web add ./path/to/custom-first-control-prompt
@@ -22,7 +22,7 @@ dsh plugin --profile web add ./path/to/custom-first-control-prompt
 卸载：
 
 ```bash
-dsh plugin --profile web remove @wm-coder/dsh-custom-first-control-prompt
+dsh plugin --profile web remove @wm-coders/dsh-custom-first-control-prompt
 ```
 
 > 安装 / 部署 / 调试中遇到过的阻碍与测试方法见
@@ -34,7 +34,7 @@ dsh plugin --profile web remove @wm-coder/dsh-custom-first-control-prompt
 
 ```yaml
 - id: custom-first-control-prompt
-  name: '@wm-coder/dsh-custom-first-control-prompt'
+  name: '@wm-coders/dsh-custom-first-control-prompt'
   config:
     sections:
       - name: house-rules

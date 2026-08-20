@@ -13,7 +13,7 @@ import type {
   PanelConfigView,
   PanelSectionView,
   PanelPairView,
-} from '@wm-coder/dsh-custom-first-control-prompt/client'
+} from '@wm-coders/dsh-custom-first-control-prompt/client'
 import type { PanelActions } from './actions.ts'
 import { useRequestsPoll } from './poll.ts'
 import type { CfcpKey } from './locales.ts'

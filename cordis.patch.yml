@@ -1,4 +1,4 @@
-# Bundle layer of @wm-coder/dsh-custom-first-control-prompt, activated by
+# Bundle layer of @wm-coders/dsh-custom-first-control-prompt, activated by
 # `dsh plugin add` through this package's `dsh.bundle.patch` declaration.
 # It inserts the two loader rows with a self-describing sample configuration:
 # one system-prompt section plus two reference exchanges, so a fresh install
@@ -14,7 +14,7 @@
     # Server-side logic: system sections + request-path reference-history
     # injection.
     - id: custom-first-control-prompt
-      name: '@wm-coder/dsh-custom-first-control-prompt'
+      name: '@wm-coders/dsh-custom-first-control-prompt'
       config:
         sections:
           - name: "system"
@@ -29,4 +29,4 @@
 
     # Browser panel (settings page, composer dock, LLM request listener).
     - id: ui-custom-first-control-prompt
-      name: '@wm-coder/dsh-client-ui-custom-first-control-prompt'
+      name: '@wm-coders/dsh-client-ui-custom-first-control-prompt'

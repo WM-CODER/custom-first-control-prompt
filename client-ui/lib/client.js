@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-	id: "@wm-coder/dsh-client-ui-custom-first-control-prompt",
+	id: "@wm-coders/dsh-client-ui-custom-first-control-prompt",
 	factory: (require) => {
 		var module = { exports: {} };
 		var exports = module.exports;
@@ -4126,10 +4126,10 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 			"dockVisible": boolean()
 		});
 		const TYPERT_REMOTE = {
-			package: "@wm-coder/dsh-custom-first-control-prompt",
+			package: "@wm-coders/dsh-custom-first-control-prompt",
 			descriptors: [
 				{
-					id: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/config-clear",
+					id: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/config-clear",
 					service: "custom-first-control-prompt-panel",
 					namespace: "custom-first-control-prompt-panel",
 					method: "config-clear",
@@ -4152,7 +4152,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}],
 					result: {
 						mode: "strict",
-						typeSymbol: "@wm-coder/dsh-custom-first-control-prompt/client#PanelWriteResult",
+						typeSymbol: "@wm-coders/dsh-custom-first-control-prompt/client#PanelWriteResult",
 						schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_config_clear_result$schema
 					},
 					sourceLocation: {
@@ -4162,7 +4162,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}
 				},
 				{
-					id: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/config-raw-import",
+					id: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/config-raw-import",
 					service: "custom-first-control-prompt-panel",
 					namespace: "custom-first-control-prompt-panel",
 					method: "config-raw-import",
@@ -4188,13 +4188,13 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 						source: "json",
 						codec: {
 							mode: "strict",
-							typeSymbol: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/config-raw-import:raw",
+							typeSymbol: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/config-raw-import:raw",
 							schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_config_raw_import_parameter_1$schema
 						}
 					}],
 					result: {
 						mode: "strict",
-						typeSymbol: "@wm-coder/dsh-custom-first-control-prompt/client#PanelWriteResult",
+						typeSymbol: "@wm-coders/dsh-custom-first-control-prompt/client#PanelWriteResult",
 						schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_config_raw_import_result$schema
 					},
 					sourceLocation: {
@@ -4204,7 +4204,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}
 				},
 				{
-					id: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/config-read",
+					id: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/config-read",
 					service: "custom-first-control-prompt-panel",
 					namespace: "custom-first-control-prompt-panel",
 					method: "config-read",
@@ -4227,7 +4227,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}],
 					result: {
 						mode: "strict",
-						typeSymbol: "@wm-coder/dsh-custom-first-control-prompt/client#PanelConfigReadResult",
+						typeSymbol: "@wm-coders/dsh-custom-first-control-prompt/client#PanelConfigReadResult",
 						schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_config_read_result$schema
 					},
 					sourceLocation: {
@@ -4237,7 +4237,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}
 				},
 				{
-					id: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/config-write",
+					id: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/config-write",
 					service: "custom-first-control-prompt-panel",
 					namespace: "custom-first-control-prompt-panel",
 					method: "config-write",
@@ -4263,13 +4263,13 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 						source: "json",
 						codec: {
 							mode: "strict",
-							typeSymbol: "@wm-coder/dsh-custom-first-control-prompt/client#PanelConfigView",
+							typeSymbol: "@wm-coders/dsh-custom-first-control-prompt/client#PanelConfigView",
 							schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_config_write_parameter_1$schema
 						}
 					}],
 					result: {
 						mode: "strict",
-						typeSymbol: "@wm-coder/dsh-custom-first-control-prompt/client#PanelWriteResult",
+						typeSymbol: "@wm-coders/dsh-custom-first-control-prompt/client#PanelWriteResult",
 						schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_config_write_result$schema
 					},
 					sourceLocation: {
@@ -4279,7 +4279,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}
 				},
 				{
-					id: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/preview-assemble",
+					id: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/preview-assemble",
 					service: "custom-first-control-prompt-panel",
 					namespace: "custom-first-control-prompt-panel",
 					method: "preview-assemble",
@@ -4302,7 +4302,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}],
 					result: {
 						mode: "strict",
-						typeSymbol: "@wm-coder/dsh-custom-first-control-prompt/client#PanelAssembleResult",
+						typeSymbol: "@wm-coders/dsh-custom-first-control-prompt/client#PanelAssembleResult",
 						schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_preview_assemble_result$schema
 					},
 					sourceLocation: {
@@ -4312,7 +4312,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}
 				},
 				{
-					id: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/requests-clear",
+					id: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/requests-clear",
 					service: "custom-first-control-prompt-panel",
 					namespace: "custom-first-control-prompt-panel",
 					method: "requests-clear",
@@ -4335,7 +4335,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}],
 					result: {
 						mode: "strict",
-						typeSymbol: "@wm-coder/dsh-custom-first-control-prompt/client#PanelRequestsView",
+						typeSymbol: "@wm-coders/dsh-custom-first-control-prompt/client#PanelRequestsView",
 						schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_requests_clear_result$schema
 					},
 					sourceLocation: {
@@ -4345,7 +4345,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}
 				},
 				{
-					id: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/requests-list",
+					id: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/requests-list",
 					service: "custom-first-control-prompt-panel",
 					namespace: "custom-first-control-prompt-panel",
 					method: "requests-list",
@@ -4368,7 +4368,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}],
 					result: {
 						mode: "strict",
-						typeSymbol: "@wm-coder/dsh-custom-first-control-prompt/client#PanelRequestsView",
+						typeSymbol: "@wm-coders/dsh-custom-first-control-prompt/client#PanelRequestsView",
 						schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_requests_list_result$schema
 					},
 					sourceLocation: {
@@ -4378,7 +4378,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}
 				},
 				{
-					id: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/requests-set-paused",
+					id: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/requests-set-paused",
 					service: "custom-first-control-prompt-panel",
 					namespace: "custom-first-control-prompt-panel",
 					method: "requests-set-paused",
@@ -4404,13 +4404,13 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 						source: "json",
 						codec: {
 							mode: "strict",
-							typeSymbol: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/requests-set-paused:paused",
+							typeSymbol: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/requests-set-paused:paused",
 							schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_requests_set_paused_parameter_1$schema
 						}
 					}],
 					result: {
 						mode: "strict",
-						typeSymbol: "@wm-coder/dsh-custom-first-control-prompt/client#PanelRequestsView",
+						typeSymbol: "@wm-coders/dsh-custom-first-control-prompt/client#PanelRequestsView",
 						schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_requests_set_paused_result$schema
 					},
 					sourceLocation: {
@@ -4420,7 +4420,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 					}
 				},
 				{
-					id: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/ui-set-dock-visible",
+					id: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/ui-set-dock-visible",
 					service: "custom-first-control-prompt-panel",
 					namespace: "custom-first-control-prompt-panel",
 					method: "ui-set-dock-visible",
@@ -4446,13 +4446,13 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 						source: "json",
 						codec: {
 							mode: "strict",
-							typeSymbol: "@wm-coder/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/ui-set-dock-visible:visible",
+							typeSymbol: "@wm-coders/dsh-custom-first-control-prompt#custom-first-control-prompt-panel/ui-set-dock-visible:visible",
 							schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_ui_set_dock_visible_parameter_1$schema
 						}
 					}],
 					result: {
 						mode: "strict",
-						typeSymbol: "@wm-coder/dsh-custom-first-control-prompt/client#PanelRequestsView",
+						typeSymbol: "@wm-coders/dsh-custom-first-control-prompt/client#PanelRequestsView",
 						schema: _deepseek_ai_dsh_custom_first_control_prompt_custom_first_control_prompt_panel_ui_set_dock_visible_result$schema
 					},
 					sourceLocation: {
@@ -4645,7 +4645,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 		* carried as state (never thrown). Used by the dock, the plugin card, and
 		* the LLM-listening tab.
 		*
-		* @module @wm-coder/dsh-client-ui-custom-first-control-prompt/poll
+		* @module @wm-coders/dsh-client-ui-custom-first-control-prompt/poll
 		*/
 		/** Poll interval for the request ring. */
 		const POLL_MS = 2e3;
@@ -4711,10 +4711,10 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 		//#endregion
 		//#region \0dsh-css:packages/client/ui-custom-first-control-prompt/src/client/panel.module.css.mjs
 		const css = ".fbnt9a_panel{flex-direction:column;gap:8px;display:flex}.fbnt9a_tabs{border-bottom:1px solid var(--ds-color-border,#e2e2e2);gap:4px;padding-bottom:4px;display:flex}.fbnt9a_tab,.fbnt9a_tabActive{cursor:pointer;color:var(--ds-color-text,#222);background:0 0;border:none;border-radius:4px;padding:6px 10px;font-size:13px}.fbnt9a_tabActive{background:var(--ds-color-fill,#ececec);font-weight:600}.fbnt9a_hint{color:var(--ds-color-text-secondary,#777);font-size:12px;line-height:1.5}.fbnt9a_error{color:#c0392b;font-size:12px}.fbnt9a_success{color:#1e8449;font-size:12px}.fbnt9a_count{color:var(--ds-color-text-secondary,#777);font-size:12px}.fbnt9a_row{align-items:center;gap:8px;font-size:13px;display:flex}.fbnt9a_buttonsRow{flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;display:flex}.fbnt9a_blockLabel{color:var(--ds-color-text-secondary,#666);margin:10px 0 4px;font-size:12px;font-weight:600}.fbnt9a_editorRow{border:1px solid var(--ds-color-border,#e2e2e2);border-radius:6px;flex-direction:column;gap:6px;margin-bottom:8px;padding:8px;display:flex}.fbnt9a_field,.fbnt9a_fieldWide{flex-direction:column;gap:2px;font-size:12px;display:flex}.fbnt9a_field input,.fbnt9a_fieldWide textarea,.fbnt9a_fieldWide input,.fbnt9a_rawArea{border:1px solid var(--ds-color-border,#d5d5d5);background:var(--ds-color-bg,#fff);color:var(--ds-color-text,#222);box-sizing:border-box;border-radius:4px;padding:4px 6px;font-size:13px}.fbnt9a_fieldWide textarea{resize:vertical;min-height:64px}.fbnt9a_rawArea{width:100%;min-height:240px;font-family:var(--ds-font-mono,monospace);white-space:pre;font-size:12px}.fbnt9a_mono{font-family:var(--ds-font-mono,ui-monospace, Consolas, monospace);white-space:pre-wrap;word-break:break-word;background:var(--ds-color-fill,#f6f6f6);border-radius:4px;max-height:220px;margin:4px 0;padding:8px;font-size:12px;overflow:auto}.fbnt9a_role{text-transform:uppercase;color:var(--ds-color-text-secondary,#777);font-size:10px;font-weight:700}.fbnt9a_previewSection{margin-top:8px}.fbnt9a_requestList{flex-direction:column;gap:6px;margin-top:8px;display:flex}.fbnt9a_requestItem{border:1px solid var(--ds-color-border,#e2e2e2);border-radius:6px;padding:6px 8px}.fbnt9a_requestItem summary{cursor:pointer;align-items:center;gap:10px;font-size:12px;display:flex}.fbnt9a_requestMeta{color:var(--ds-color-text-secondary,#777);flex-wrap:wrap;gap:12px;margin-top:6px;font-size:12px;display:flex}.fbnt9a_requestBody{flex-direction:column;display:flex}.fbnt9a_requestSummary{color:var(--ds-color-text-secondary,#777);font-size:12px}.fbnt9a_card{flex-direction:column;gap:10px;padding:4px 0;display:flex}.fbnt9a_cardTitle{font-size:14px;font-weight:600}.fbnt9a_danger{color:#c0392b;border-color:#c0392b}.fbnt9a_dock{border:1px solid var(--ds-color-border,#e2e2e2);background:var(--ds-color-bg,#fff);border-radius:6px;margin-bottom:4px;font-size:12px}.fbnt9a_dockHeader{flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding:4px 8px;display:flex}.fbnt9a_dockTitle{cursor:pointer;color:var(--ds-color-text,#222);background:0 0;border:none;align-items:center;gap:8px;padding:2px 0;font-size:12px;font-weight:600;display:flex}.fbnt9a_dockButtons{gap:6px;display:flex}.fbnt9a_badgeOn,.fbnt9a_badgeOff{border-radius:999px;padding:1px 8px;font-size:11px}.fbnt9a_badgeOn{color:#1e8449;background:#d5f5e3}.fbnt9a_badgeOff{background:var(--ds-color-fill,#ececec);color:var(--ds-color-text-secondary,#777)}.fbnt9a_dockBody{border-top:1px solid var(--ds-color-border,#e2e2e2);padding:8px}button{border:1px solid var(--ds-color-border,#d5d5d5);background:var(--ds-color-bg,#fff);color:var(--ds-color-text,#222);cursor:pointer;border-radius:4px;padding:4px 10px;font-size:12px}button:disabled{opacity:.5;cursor:not-allowed}input[type=checkbox]{accent-color:#2e86de}";
-		const tagId = "@wm-coder/dsh-client-ui-custom-first-control-prompt/panel.module.css";
+		const tagId = "@wm-coders/dsh-client-ui-custom-first-control-prompt/panel.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
-			tag.dataset.plugin = "@wm-coder/dsh-client-ui-custom-first-control-prompt";
+			tag.dataset.plugin = "@wm-coders/dsh-client-ui-custom-first-control-prompt";
 			tag.dataset.pluginCss = tagId;
 			tag.textContent = css;
 			document.head.appendChild(tag);

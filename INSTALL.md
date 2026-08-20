@@ -1,8 +1,8 @@
 # 单文件夹安装手册（给 AI 的安装说明）
 
 目标：用户把**本文件夹**交给 AI 并说「安装」后，AI 在目标机器的 dsh web 部署上完成：
-1. 核心插件（`@wm-coder/dsh-custom-first-control-prompt`）安装 —— 持久，重启不丢；
-2. 管理面板（正式客户端包 `@wm-coder/dsh-client-ui-custom-first-control-prompt`，位于 `client-ui/`）安装 —— 持久，**web 重启后仍在**，无需重装。
+1. 核心插件（`@wm-coders/dsh-custom-first-control-prompt`）安装 —— 持久，重启不丢；
+2. 管理面板（正式客户端包 `@wm-coders/dsh-client-ui-custom-first-control-prompt`，位于 `client-ui/`）安装 —— 持久，**web 重启后仍在**，无需重装。
 
 **给 AI 的默认决策（照此执行，无需询问用户）**：先跑 `install.ps1`（或手动执行
 方式 A 的两条命令）；装完直接可用——核心包自带 bundle 层（`dsh.bundle` 声明），
@@ -130,7 +130,7 @@ junction 模式没有对账，`<DSH_HOME>/profiles/web/cordis.patch.yml` 必须�
 - **手工**：把 `cordis.patch.yml.template` 的内容（带 id 的定向 patch，**非 insert**）
   追加到 profile patch 并改成自己的内容。覆盖语义：同 id 的 config 后写胜出。
 - 临时停用：覆盖里写 `disabled: true`；彻底卸载：`dsh plugin --profile web remove
-  @wm-coder/dsh-custom-first-control-prompt @wm-coder/dsh-client-ui-custom-first-control-prompt`
+  @wm-coders/dsh-custom-first-control-prompt @wm-coders/dsh-client-ui-custom-first-control-prompt`
   （或 `uninstall.ps1`，会连带清理 junction 与 patch 残留）。
 
 配置类变更（cordis.patch.yml）走 HMR 热重载（几秒），**无需重启**。
@@ -162,7 +162,7 @@ junction 模式没有对账，`<DSH_HOME>/profiles/web/cordis.patch.yml` 必须�
 - 设置 → 「自定义优先控制提示词」页面：预览 / 配置编辑 / RAW /
   **LLM 监听**（同样有开始/停止、清空按钮）；profile patch 无行时编辑器显示
   当前生效的组合配置（bundle 层默认值），保存即生成 profile 覆盖；
-- 设置 → 插件 → `@wm-coder/dsh-custom-first-control-prompt` 卡片：「显示输入框上方条状 inspector」
+- 设置 → 插件 → `@wm-coders/dsh-custom-first-control-prompt` 卡片：「显示输入框上方条状 inspector」
   与「监听 LLM 请求」两个开关（被隐藏的 dock 条从这里恢复）；
 - 若插件未安装，面板自动保持休眠，不影响 web 启动。
 
