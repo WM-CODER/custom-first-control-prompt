@@ -5,7 +5,7 @@
  * namespace. This package owns no business state: every value arrives from
  * the Host service.
  *
- * @module @wm-coders/dsh-client-ui-custom-first-control-prompt/client
+ * @module @wm-coders/dsh-custom-first-control-prompt/client
  */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client';
 import { type CfcpKey } from './locales.ts';

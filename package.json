@@ -1,7 +1,7 @@
 {
   "name": "@wm-coders/dsh-custom-first-control-prompt",
   "description": "Deployment-configured prompt prefix for DeepSeek Harness: ordered system-prompt sections ahead of the persona and reference user/assistant exchanges injected into every ordinary conversation request as real alternating messages (request-path interception, zero session-log writes).",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "publishConfig": {
     "access": "public"
   },

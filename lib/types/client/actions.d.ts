@@ -3,7 +3,7 @@
  * Typert Remote namespace `custom-first-control-prompt-panel`. Every method
  * resolves to a `RemoteResult`; callers unwrap it (no carrier rejection).
  *
- * @module @wm-coders/dsh-client-ui-custom-first-control-prompt/actions
+ * @module @wm-coders/dsh-custom-first-control-prompt/actions
  */
 import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client';
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol';

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.3] - 2026-08-21
+
+### Fixed
+- Client bundle `__ModuleLoader__.load` registration id now matches the core package name (`@wm-coders/dsh-custom-first-control-prompt`), fixing "loaded without registering" error on plugin install
+
 ## [0.2.2] - 2026-08-21
 
 ### Changed
