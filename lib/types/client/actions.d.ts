@@ -7,7 +7,7 @@
  */
 import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client';
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol';
-import type { PanelAssembleResult, PanelConfigReadResult, PanelConfigView, PanelRequestsView, PanelWriteResult } from '@wm-coders/dsh-custom-first-control-prompt/client';
+import type { PanelAssembleResult, PanelConfigReadResult, PanelConfigView, PanelRequestsView, PanelWriteResult } from '@wm-coders/dsh-custom-first-control-prompt/typert-client';
 /** The panel verbs the UI binds; every call names the owning session. */
 export interface PanelActions {
     /** Read the profile patch entry. */

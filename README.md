@@ -117,15 +117,15 @@ The reference history leads the message sequence byte-stably, keeping request pr
 - **Seed text is model-visible reference material** — treat it as prompt text the model reads, not a trusted channel.
 - **No mid-session edits** — configuration changes take effect for new requests after a web restart; a compliant "edit while quiescent" surface-replacement event carrying a source seq reference is deferred.
 
-## FAQ: how do the plugin and panel rows enter the composition?
+## FAQ: how does the plugin enter the composition?
 
-The core package declares `dsh.bundle` (in-package `cordis.patch.yml`), and the
-reconciliation inside `dsh plugin add` activates that bundle layer — **both the
+The package declares `dsh.bundle` (in-package `cordis.patch.yml`), and the
+reconciliation inside `dsh plugin add` activates that bundle layer — **the
 core row `custom-first-control-prompt` (server logic: system sections,
-reference-history injection) and the panel row `ui-custom-first-control-prompt`
-(browser UI: settings page, dock, LLM listener) appear together**, with no
-hand-written patch rows. `dsh plugin remove` drops the dependencies and the
-bundle layer together.
+reference-history injection) appears with no hand-written patch rows**. The
+browser panel (settings page, dock, LLM listener) is auto-discovered via the
+package's `dsh.client` declaration — no separate patch row for the UI half.
+`dsh plugin remove` drops the dependency and the bundle layer together.
 
 - **Customizing**: never copy a `- insert:` row. Write an **id-targeted
   (non-insert) patch** in the profile `cordis.patch.yml` to override the bundle

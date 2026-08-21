@@ -163,7 +163,7 @@ describe('loader export path', () => {
     // No session companion export: the request path writes no log events, so
     // there is nothing for a log invariant to validate.
     expect((App as Record<string, unknown>).Invariant).toBeUndefined()
-    const ns = await import('@deepseek-ai/dsh-custom-first-control-prompt/client')
+    const ns = await import('@deepseek-ai/dsh-custom-first-control-prompt/typert-client')
     expect(typeof ns).toBe('object')
   })
 })

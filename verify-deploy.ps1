@@ -72,7 +72,6 @@ if (Test-Path "$modulesDir\@deepseek-ai\dsh\lib\bin.js") {
   Pop-Location
 }
 Check "composition has core row" ($dump -match '(?m)- id: custom-first-control-prompt') "" "core row missing: dsh plugin add activates the bundle layer; offline installs need the profile rows (install.ps1)"
-Check "composition has panel row" ($dump -match '(?m)- id: ui-custom-first-control-prompt') "" "panel row missing: same layer as the core row (bundle patch or offline profile rows)"
 $profilePkg = Join-Path $profileDir 'package.json'
 if (Test-Path $profilePkg) {
   $managed = (Get-Content $profilePkg -Raw) -match '@wm-coders/dsh-custom-first-control-prompt'
@@ -86,14 +85,14 @@ if (Test-Path $profilePkg) {
 # 3. boot manifest + panel bundle
 try {
   $html = (Invoke-WebRequest -Uri "$base/" -UseBasicParsing -TimeoutSec 10).Content
-  Check "boot manifest has panel package" ($html.Contains('dsh-client-ui-custom-first-control-prompt')) "" "panel row missing or client-modules not re-composed (restart web after dir update)"
+  Check "boot manifest has plugin package" ($html.Contains('dsh-custom-first-control-prompt')) "" "plugin row missing or client-modules not re-composed (restart web after dir update)"
 } catch {
   Check "web index reachable" $false ($_.Exception.Message) "web not up or hung"
 }
 
 try {
-  $b = Invoke-WebRequest -Uri "$base/plugins/@wm-coders/dsh-client-ui-custom-first-control-prompt/client.js" -UseBasicParsing -TimeoutSec 10
-  Check "panel bundle route 200" ($b.StatusCode -eq 200) "HTTP $($b.StatusCode)" "panel package/junction intact?"
+  $b = Invoke-WebRequest -Uri "$base/plugins/@wm-coders/dsh-custom-first-control-prompt/client.js" -UseBasicParsing -TimeoutSec 10
+  Check "panel bundle route 200" ($b.StatusCode -eq 200) "HTTP $($b.StatusCode)" "plugin package/junction intact?"
 } catch {
   Check "panel bundle route 200" $false ($_.Exception.Message) "panel row/package issue"
 }

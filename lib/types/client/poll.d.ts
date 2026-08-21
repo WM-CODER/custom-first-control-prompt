@@ -1,5 +1,5 @@
 import type { SessionId } from '@deepseek-ai/dsh-client-runtime/client';
-import type { PanelRequestsView } from '@wm-coders/dsh-custom-first-control-prompt/client';
+import type { PanelRequestsView } from '@wm-coders/dsh-custom-first-control-prompt/typert-client';
 import type { PanelActions } from './actions.ts';
 /** Snapshot of the panel's request ring and listener state, or a failure. */
 export interface RequestsPollState {

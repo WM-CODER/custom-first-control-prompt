@@ -57,13 +57,7 @@ check "composition has core row" bash -c "
   echo \"\$out\" | grep -q 'custom-first-control-prompt'
 "
 
-# 4) composition has panel row
-check "composition has panel row" bash -c "
-  out=\$(node \"$dsh_bin\" --profile \"$profile_name\" --dump-config 2>/dev/null)
-  echo \"\$out\" | grep -q 'ui-custom-first-control-prompt'
-"
-
-# 5) install mode: official (dsh plugin add) vs junction
+# 4) install mode: official (dsh plugin add) vs junction
 profile_pkg="$profile_dir/package.json"
 if [[ -f "$profile_pkg" ]] && grep -q '@wm-coders/dsh-custom-first-control-prompt' "$profile_pkg"; then
   echo "PASS  install mode: official (dsh plugin add)"
@@ -73,13 +67,13 @@ else
   ((pass++))
 fi
 
-# 6) plugin dir matches remote
+# 5) plugin dir matches remote
 check "plugin dir matches remote" bash -c "
   cd \"$folder\"
   git rev-parse HEAD >/dev/null 2>&1
 "
 
-# 7) web process listening on 3080
+# 6) web process listening on 3080
 if command -v lsof >/dev/null 2>&1; then
   check "web process listening" bash -c "lsof -ti :3080 >/dev/null 2>&1"
 elif command -v ss >/dev/null 2>&1; then
@@ -88,13 +82,13 @@ else
   echo "SKIP  web process listening (no lsof/ss)"
 fi
 
-# 8) web index reachable
+# 7) web index reachable
 check "web index reachable" bash -c "
   code=\$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3080/ 2>/dev/null)
   [[ \"\$code\" == \"200\" ]]
 "
 
-# 9) panel bundle route 200
+# 8) panel bundle route 200
 check "panel bundle route 200" bash -c "
   code=\$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3080/assets/custom-first-control-prompt/client.js 2>/dev/null)
   [[ \"\$code\" == \"200\" ]]

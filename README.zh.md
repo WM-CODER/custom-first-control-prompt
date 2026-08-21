@@ -120,13 +120,13 @@ dsh plugin --profile web remove @wm-coders/dsh-custom-first-control-prompt
 - **种子文本是模型可见的参考材料** — 部署方应将其视为模型读取的提示词文本，而非可信通道。
 - **不支持会话中段修改** — 配置变更在 web 重启后对新请求生效；合规的"静止时编辑"应追加带 source seq 引用的 surface 替换事件，已延后。
 
-## FAQ：面板 UI 与插件行是怎么进入组合的？
+## FAQ：插件是怎么进入组合的？
 
-核心包声明了 `dsh.bundle`（包内 `cordis.patch.yml`），`dsh plugin add` 的对账会把这个
+包声明了 `dsh.bundle`（包内 `cordis.patch.yml`），`dsh plugin add` 的对账会把这个
 bundle 层激活进组合——**核心行 `custom-first-control-prompt`（服务端逻辑：系统段、
-参考历史注入）与面板行 `ui-custom-first-control-prompt`（浏览器 UI：设置页、dock、
-LLM 监听）一起出现**，无需手写任何 patch 行。卸载 `dsh plugin remove` 会把依赖与
-bundle 层一起移除。
+参考历史注入）出现**，无需手写任何 patch 行。浏览器面板（设置页、dock、
+LLM 监听）通过包的 `dsh.client` 声明自动发现——不需要单独的面板行。
+卸载 `dsh plugin remove` 会把依赖与 bundle 层一起移除。
 
 - **自定义配置**：不要复制 `- insert:` 行。在 profile 的 `cordis.patch.yml` 写
   **带 id 的定向 patch**（非 insert）覆盖 bundle 行的 config（后写胜出），样例见

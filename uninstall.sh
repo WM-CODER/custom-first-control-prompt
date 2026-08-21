@@ -1,138 +1,115 @@
 #!/usr/bin/env bash
-# uninstall.sh - one-command plugin removal from a dsh profile.
+# uninstall.sh - remove the plugin from a dsh profile (macOS/Linux).
 #
-# Official path: dsh plugin --profile web remove (pnpm drops both linked
-# packages; reconciliation removes the bundle layer). Then, regardless of how
-# the plugin was installed: legacy symlinks under both scopes are removed and
-# this plugin's rows are stripped surgically from the profile patch — every
-# other entry, comment, and override stays untouched. The plugin folder itself
-# is never touched.
+# Primary path (official): dsh plugin --profile web remove <folder>
+#   pnpm unlinks the package, and the CLI's reconciliation removes this
+#   package's dsh.bundle patch layer. The browser panel (auto-discovered
+#   via dsh.client) disappears with it.
+# Offline path (-o): remove symlink + strip the plugin row from the
+#   profile patch.
 #
 # Usage:
-#   ./uninstall.sh
-#   ./uninstall.sh --dsh-home /path/.dsh --profile web
+#   bash uninstall.sh
+#   bash uninstall.sh -d /path/.dsh -p web -o
+#
+# Safe to run repeatedly (idempotent).
 
 set -euo pipefail
 
 dsh_home=""
 profile_name="web"
+folder="$(cd "$(dirname "$0")" && pwd)"
+offline=false
 
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --dsh-home) dsh_home="$2"; shift 2 ;;
-    --profile) profile_name="$2"; shift 2 ;;
-    *) echo "Unknown arg: $1"; exit 1 ;;
+while getopts "d:p:f:o" opt; do
+  case $opt in
+    d) dsh_home="$OPTARG" ;;
+    p) profile_name="$OPTARG" ;;
+    f) folder="$OPTARG" ;;
+    o) offline=true ;;
+    *) echo "Usage: $0 [-d DSH_HOME] [-p PROFILE] [-f FOLDER] [-o]"; exit 1 ;;
   esac
 done
 
+echo "== home=${dsh_home:-<auto>} profile=$profile_name"
+
 # ---- resolve home ----
-if [[ -z "$dsh_home" ]]; then
-  dsh_home="$HOME/.dsh"
-  if [[ ! -d "$dsh_home/profiles" ]]; then
-    echo "ERROR: cannot locate DSH_HOME (tried $dsh_home). Pass --dsh-home <DSH_HOME>."
+if [ -z "$dsh_home" ]; then
+  candidate="$HOME/.dsh"
+  if [ -d "$candidate/profiles" ]; then
+    dsh_home="$candidate"
+  else
+    echo "ERROR: cannot locate DSH_HOME (tried $candidate). Pass -d <DSH_HOME>."
     exit 1
   fi
 fi
 profile_dir="$dsh_home/profiles/$profile_name"
-if [[ ! -d "$profile_dir" ]]; then
+if [ ! -d "$profile_dir" ]; then
   echo "ERROR: profile directory missing: $profile_dir"
   exit 1
 fi
 
-# ---- official removal (only when the packages are pnpm-managed deps) ----
-managed=false
-profile_pkg="$profile_dir/package.json"
-if [[ -f "$profile_pkg" ]] && grep -q '@wm-coders/dsh-custom-first-control-prompt' "$profile_pkg"; then
-  managed=true
-fi
-dsh_bin="$dsh_home/profiles/node_modules/@deepseek-ai/dsh/lib/bin.js"
-if [[ "$managed" == true && -f "$dsh_bin" ]]; then
-  if node "$dsh_bin" plugin --profile "$profile_name" remove \
-      '@wm-coders/dsh-custom-first-control-prompt' \
-      '@wm-coders/dsh-client-ui-custom-first-control-prompt' 2>/dev/null; then
-    echo "== dsh plugin remove done (deps + bundle layer)"
-  else
-    echo "== dsh plugin remove exited non-zero (continuing with symlink cleanup)"
-  fi
-else
-  echo "== packages not pnpm-managed (symlink/manual install) - skip official remove"
+# ---- package dir ----
+if [ ! -f "$folder/package.json" ]; then
+  echo "ERROR: package.json missing in $folder"
+  exit 1
 fi
 
-# ---- symlinks (legacy/manual installs) ----
-# Current product scope @wm-coder, plus the legacy @deepseek-ai symlinks from
-# pre-rename installs so upgrades clean up both.
-for scope in "$profile_dir/node_modules/@wm-coder" "$profile_dir/node_modules/@deepseek-ai"; do
-  for name in dsh-custom-first-control-prompt dsh-client-ui-custom-first-control-prompt; do
-    link="$scope/$name"
-    if [[ -L "$link" || -d "$link" ]]; then
-      rm -f "$link"
-      echo "== symlink removed: $(basename "$scope")/$name"
-    fi
+# ---- dependency chain ----
+dep_link="$folder/node_modules"
+if [ -L "$dep_link" ]; then
+  target=$(readlink "$dep_link")
+  rm "$dep_link"
+  echo "== dependency chain removed: $dep_link (was -> $target)"
+elif [ -e "$dep_link" ]; then
+  echo "== dependency chain not a symlink (skip): $dep_link"
+else
+  echo "== dependency chain absent (skip): $dep_link"
+fi
+
+if [ "$offline" = false ]; then
+  # ---- official path: dsh plugin remove ----
+  dsh_bin="$dsh_home/profiles/node_modules/@deepseek-ai/dsh/lib/bin.js"
+  if [ ! -f "$dsh_bin" ]; then
+    echo "ERROR: dsh CLI not found at $dsh_bin. Re-run with -o for the symlink fallback."
+    exit 1
+  fi
+  node "$dsh_bin" plugin --profile "$profile_name" remove "$folder"
+  echo "== dsh plugin remove done (bundle layer reconciled: core row removed, client auto-removed)"
+else
+  # ---- offline path: remove symlink + strip patch row ----
+  for scope in "$profile_dir/node_modules/@wm-coders" "$profile_dir/node_modules/@wm-coder" "$profile_dir/node_modules/@deepseek-ai"; do
+    if [ ! -d "$scope" ]; then continue; fi
+    for entry in "$scope"/*custom-first-control-prompt*; do
+      if [ -L "$entry" ]; then
+        rm "$entry"
+        echo "== symlink removed: $entry"
+      fi
+    done
   done
-done
 
-# ---- profile patch: strip only this plugin's rows ----
-# Handles both shapes: legacy `- insert:` list rows and targeted overrides.
-# A `- insert:` wrapper left empty by the strip is removed with it.
-patch_path="$profile_dir/cordis.patch.yml"
-if [[ ! -f "$patch_path" ]]; then
-  echo "== patch absent (skip)"
-else
-  raw=$(cat "$patch_path")
-  # Pass 1: remove plugin rows and their indented children
-  stripped=$(awk '
-    {
-      t = $0; sub(/^[[:space:]]+/, "", t); ind = length($0) - length(t)
-      if (skip >= 0) {
-        if (t == "") next
-        if (t ~ /^- / && ind <= skip) { skip = -1; print; next }
-        next
-      }
-      if (t == "- id: custom-first-control-prompt" || t == "- id: ui-custom-first-control-prompt") {
-        skip = ind; next
-      }
-      print
-    }
-  ' BEGIN'{skip=-1}' "$patch_path")
-
-  # Pass 2: remove empty - insert: wrappers
-  stripped=$(echo "$stripped" | awk '
-    {
-      lines[NR] = $0
-      t = $0; sub(/^[[:space:]]+/, "", t); ind = length($0) - length(t)
-      if (t == "- insert:") {
-        # peek next non-empty line
-        next_i = NR + 1
-        while (next_i in lines && lines[next_i] ~ /^[[:space:]]*$/) next_i++
-        if (!(next_i in lines)) { next }  # EOF
-        next_t = lines[next_i]; sub(/^[[:space:]]+/, "", next_t)
-        next_ind = length(lines[next_i]) - length(next_t)
-        if (next_t == "" || next_t ~ /^#/ || (next_t ~ /^- / && next_ind <= ind)) { next }
-      }
-      print
-    }
-  ')
-
-  # Check if any real entries remain
-  has_entry=false
-  while IFS= read -r line; do
-    t="${line#"${line%%[![:space:]]*}"}"
-    [[ -n "$t" && ! "$t" =~ ^# ]] && has_entry=true && break
-  done <<< "$stripped"
-
-  if [[ "$has_entry" == false ]]; then
-    stripped="$(echo "$stripped" | sed -e '${/^$/d}')"$'\n'"]"$'\n'
-  fi
-
-  if [[ "$stripped" != "$raw" ]]; then
-    stamp=$(date +%Y%m%d%H%M%S)
-    cp "$patch_path" "$patch_path.bak-$stamp"
-    printf '%s' "$stripped" > "$patch_path"
-    echo "== plugin rows stripped from patch (backup: cordis.patch.yml.bak-$stamp)"
+  patch_path="$profile_dir/cordis.patch.yml"
+  if [ -f "$patch_path" ]; then
+    if grep -q 'id: custom-first-control-prompt' "$patch_path"; then
+      python3 -c "
+import re, sys
+with open('$patch_path', 'r') as f:
+    content = f.read()
+pattern = r'(?ms)^- insert:\s*\n\s*- id: custom-first-control-prompt\s*\n(?:(?:\s{4,}.*\n)*)'
+stripped = re.sub(pattern, '', content).strip()
+with open('$patch_path', 'w') as f:
+    f.write(stripped + '\n' if stripped else '')
+"
+      echo "== profile patch row stripped (custom-first-control-prompt)"
+    else
+      echo "== profile patch has no custom-first-control-prompt row (skip)"
+    fi
   else
-    echo "== patch has no plugin rows (skip)"
+    echo "== profile patch absent (skip)"
   fi
 fi
 
 echo ""
-echo "Uninstalled. Restart the web app to drop the plugin from the running tree."
+echo "Uninstalled. Restart the web app and hard-refresh the browser"
+echo "(Ctrl+Shift+R) to drop the plugin from the running tree and"
+echo "client-modules list."

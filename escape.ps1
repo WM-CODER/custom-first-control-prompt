@@ -1,10 +1,11 @@
 # escape.ps1 - emergency soft-disable: neutralize the plugin's patch rows
 # without uninstalling, so the web app can boot while the user investigates.
 #
-# C-only mode: the plugin's only footprint is its bundle-layer rows in
-# cordis.patch.yml. This script appends `disabled: true` overrides for both
-# rows (core + panel), leaving the original configuration untouched. To
-# re-enable, delete the appended section.
+# C-only mode: the plugin's only footprint is its bundle-layer row in
+# cordis.patch.yml. This script appends a `disabled: true` override for the
+# core row, leaving the original configuration untouched. The browser panel
+# (auto-discovered via dsh.client) is disabled with it. To re-enable, delete
+# the appended section.
 #
 # Usage:
 #   powershell -ExecutionPolicy Bypass -File escape.ps1
@@ -50,14 +51,12 @@ if (-not (Test-Path $patchPath)) {
     }
     $override = @'
 
-# ---- escape.ps1 appended section: disable plugin rows (delete to re-enable) ----
+# ---- escape.ps1 appended section: disable plugin row (delete to re-enable) ----
 - id: custom-first-control-prompt
-  disabled: true
-- id: ui-custom-first-control-prompt
   disabled: true
 '@
     Add-Content -Path $patchPath -Value $override -Encoding utf8
-    Write-Output "  disabled custom-first-control-prompt + ui-custom-first-control-prompt"
+    Write-Output "  disabled custom-first-control-prompt"
   }
 }
 

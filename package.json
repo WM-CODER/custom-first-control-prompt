@@ -1,7 +1,7 @@
 {
   "name": "@wm-coders/dsh-custom-first-control-prompt",
   "description": "Deployment-configured prompt prefix for DeepSeek Harness: ordered system-prompt sections ahead of the persona and reference user/assistant exchanges injected into every ordinary conversation request as real alternating messages (request-path interception, zero session-log writes).",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publishConfig": {
     "access": "public"
   },
@@ -18,6 +18,10 @@
       "default": "./lib/index.js"
     },
     "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./typert-client": {
       "types": "./lib/types/client.d.ts",
       "default": "./lib/types/client.js"
     },
@@ -36,12 +40,15 @@
   "files": [
     "cordis.patch.yml",
     "lib/index.js",
+    "lib/client.js",
+    "lib/client.js.map",
     "lib/typert.host.js",
     "lib/typert.host.d.ts",
     "lib/typert.remote-client.js",
     "lib/typert.remote-client.d.ts",
     "lib/types/client.d.ts",
     "lib/types/client.js",
+    "lib/types/client/**/*.d.ts",
     "lib/*.d.ts",
     "lib/*.d.ts.map"
   ],
@@ -57,11 +64,28 @@
     "@deepseek-ai/dsh-llm": "0.1.x",
     "@deepseek-ai/dsh-system-prompt": "0.1.x",
     "@deepseek-ai/dsh-typert-protocol": "0.1.x",
-    "@deepseek-ai/cordis": "4.0.1"
+    "@deepseek-ai/cordis": "4.0.1",
+    "@deepseek-ai/dsh-api-remotes": "0.1.x",
+    "@deepseek-ai/dsh-client-locale": "0.1.x",
+    "@deepseek-ai/dsh-client-runtime": "0.1.x",
+    "@deepseek-ai/dsh-client-ui-conversation": "0.1.x",
+    "@deepseek-ai/dsh-client-ui-settings": "0.1.x",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.x",
+    "react": "^18.2.0"
   },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ],
+      "platform": "web"
     }
   }
 }
